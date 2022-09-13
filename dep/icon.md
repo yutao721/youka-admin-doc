@@ -4,263 +4,218 @@
 
 ## 组件库图标
 
-使用 `ant-design-vue` 提供的图标
+使用 `element-ui` 提供的图标
 
 ```vue
 <template>
-  <StarOutlined />
-  <StarFilled />
-  <StarTwoTone twoToneColor="#eb2f96" />
+  <div class="flex justify-around">
+    <i class="el-icon-edit"></i>
+    <i class="el-icon-share"></i>
+    <i class="el-icon-delete"></i>
+  </div>
 </template>
 
-<script>
-  import { defineComponent } from 'vue';
-  import { StarOutlined, StarFilled, StarTwoTone } from '@ant-design/icons-vue';
-  export default defineComponent({
-    components: { StarOutlined, StarFilled, StarTwoTone },
-  });
-</script>
 ```
 
-## Svg Sprite 图标
+更多`element-ui`icon,请查看文档：[文档地址](https://element.eleme.cn/#/zh-CN/component/icon)
 
-### 使用
-
-将需要的 svg 图标放到`src/assets/icons`内
-
-例: test.svg
+## Svg Icon 图标
 
 1. 使用`SvgIcon`组件进行展示
 
+   > - 该组件已挂载到全局组件中，不需要在页面中再次引入了
+   > - 此组件只能使用`src/assets/icons/svg`中的svg图标，可自行添加或者删除图标，所有图标都会被自动导入，无需手动操作。
+   >
+   > - svg-icon 默认会读取其父级的 color fill: currentColor，可以改变父级的color或者直接改变fill的颜色即可。
+   > - 支持使用外链的形式引入，<svg-icon icon-class="https://xxxx.svg />
+   >
+   > - 如果你是从 [iconfont](https://www.iconfont.cn/)下载的图标，记得使用如 Sketch 等工具规范一下图标的大小问题，不然可能会造成项目中的图标大小尺寸不统一的问题。
+   >
+   >   本项目中使用的图标都是 128*128 大小规格的
+
 ```vue
 <template>
-  <SvgIcon name="test" />
+  <div class="flex justify-around">
+    <svg-icon icon-class="404"></svg-icon>
+    <svg-icon icon-class="tree"></svg-icon>
+    <svg-icon icon-class="user"></svg-icon>
+    <svg-icon icon-class="https://xxxx.svg />
+  </div>
 </template>
-
-<script>
-  import { defineComponent } from 'vue';
-  import { SvgIcon } from '/@/components/Icon';
-  export default defineComponent({
-    components: { SvgIcon },
-  });
-</script>
 ```
 
 2. 使用`Icon`组件进行展示
 
-以 `｜svg` 结尾会自动使用`SvgIcon`组件
+   > 该组件是由`@iconify/vue2`组件中导出得到的，也挂载了全局中,icon 的值可以在 [Iconify](https://iconify.design/) 或 [Netlify](https://icones.netlify.app/collection/ant-design) 上查询,使用的是在线模式
+
+   
+
+   ```vue
+   <div class="flex justify-around">
+     <Icon Icon="ion:layers-outline" :size="30"/>
+     <Icon icon="ion:bar-chart-outline" :size="30"/>
+     <Icon icon="ion:tv-outline" :size="30"/>
+     <Icon icon="ion:settings-outline" :size="30" color="red"/>
+   </div>
+   ```
+
+
+
+
+
+3. 使用`CIcon`组件进行展示
+
+以 `｜svg` 结尾会自动使用`SvgIcon`组件,否则使用Iconify中的Icon组件渲染
 
 ```vue
-<template>
-  <Icon name="test|svg" />
-</template>
-
-<script>
-  import { defineComponent } from 'vue';
-  import { Icon } from '/@/components/Icon';
-  export default defineComponent({
-    components: { Icon },
-  });
-</script>
+<el-card class="card-box" header="IconIfy 组件使用(使用CIcon组件icon)">
+  <div class="flex justify-around">
+    <CIcon iconClass="ion:layers-outline" :size="30"/>
+    <CIcon iconClass="ion:bar-chart-outline" :size="30"/>
+    <CIcon iconClass="ion:tv-outline" :size="30"/>
+    <CIcon iconClass="ion:settings-outline" :size="30" color="red"/>
+    <CIcon iconClass="build|svg"/>
+  </div>
+</el-card>
 ```
 
 ## Iconify 图标
 
 使用方式请参考 [Icon 组件](../components/icon.md)
 
-项目中使用到的是 [vite-plugin-purge-icons](https://github.com/antfu/purge-icons/blob/main/packages/vite-plugin-purge-icons/README.md) 这个插件来进行图标实现。
+项目中使用到的是 `purge-icons-webpack-plugin` 这个插件来进行图标实现。
 
 1. 安装依赖
 
 ```bash
 
-yarn add @iconify/iconify
-
-yarn add @iconify/json @purge-icons/generated -D
+yarn add purge-icons-webpack-plugin -D
 
 ```
 
-2. 在 `vite.config.ts`内引入插件
+2. 在`vue.config.js`文件中配置插件使用。
 
 ```ts
-import PurgeIcons from 'vite-plugin-purge-icons';
-
-export default {
-  plugins: [PurgeIcons()],
+// vue.config.js
+ 
+const { PurgeIcons } = require('purge-icons-webpack-plugin');
+ 
+module.exports = { 
+ 
+  chainWebpack: config => {
+    config.plugin('purgeIcons').use(PurgeIcons).tap(args => {
+      return args
+    })
+  },
+ 
 };
 ```
 
-3. 编写 Icon 组件
+3. 在`main.js`文件中import '@purge-icons/generated',并注册为全局组件，也可以不注册为全局组件，使用的时候再导入`import { Icon } from '@iconify/vue2`';
 
-完整代码 [src/components/Icon/src/Icon.vue](https://github.com/vbenjs/vue-vben-admin/blob/main/src/components/Icon/src/Icon.vue)
+```js
+// main.js
+import '@purge-icons/generated';
+import { Icon } from '@iconify/vue2';
+
+Vue.component('Icon', Icon)
+```
+
+
+
+4. 编写 `CIcon` 组件
+
+完整代码
 
 ```vue
 <template>
-  <SvgIcon :size="size" :name="getSvgIcon" v-if="isSvgIcon" :class="[$attrs.class]" :spin="spin" />
-  <span
-    v-else
-    ref="elRef"
-    :class="[$attrs.class, 'app-iconify anticon', spin && 'app-iconify-spin']"
-    :style="getWrapStyle"
-  ></span>
+  <SvgIcon
+      :iconClass="getSvgIcon"
+      v-if="isSvgIcon"
+      :class="[$attrs.class,className, 'anticon']"
+  />
+  <Icon v-else
+        :icon="iconClass"
+        :class="[$attrs.class, 'svg-icon app-iconify anticon',]"
+  ></Icon>
 </template>
-<script lang="ts">
-  import type { PropType } from 'vue';
-  import {
-    defineComponent,
-    ref,
-    watch,
-    onMounted,
-    nextTick,
-    unref,
-    computed,
-    CSSProperties,
-  } from 'vue';
 
-  import SvgIcon from './SvgIcon.vue';
-  import Iconify from '@purge-icons/generated';
-  import { isString } from '/@/utils/is';
-  import { propTypes } from '/@/utils/propTypes';
+<script>
+  import SvgIcon from '../SvgIcon/index';
+  import '@purge-icons/generated';
+  import { Icon } from '@iconify/vue2';
 
   const SVG_END_WITH_FLAG = '|svg';
-  export default defineComponent({
-    name: 'GIcon',
-    components: { SvgIcon },
+  export default {
     props: {
-      // icon name
-      icon: propTypes.string,
-      // icon color
-      color: propTypes.string,
-      // icon size
-      size: {
-        type: [String, Number] as PropType<string | number>,
-        default: 16,
+      // icon的名称
+      iconClass: {
+        type: String,
+        required: true
       },
-      spin: propTypes.bool.def(false),
-      prefix: propTypes.string.def(''),
+      // 自定义的class
+      className: {
+        type: String,
+        default: ''
+      }
     },
-    setup(props) {
-      const elRef = ref<ElRef>(null);
-
-      const isSvgIcon = computed(() => props.icon?.endsWith(SVG_END_WITH_FLAG));
-      const getSvgIcon = computed(() => props.icon.replace(SVG_END_WITH_FLAG, ''));
-      const getIconRef = computed(() => `${props.prefix ? props.prefix + ':' : ''}${props.icon}`);
-
-      const update = async () => {
-        if (unref(isSvgIcon)) return;
-
-        const el = unref(elRef);
-        if (!el) return;
-
-        await nextTick();
-        const icon = unref(getIconRef);
-        if (!icon) return;
-
-        const svg = Iconify.renderSVG(icon, {});
-        if (svg) {
-          el.textContent = '';
-          el.appendChild(svg);
-        } else {
-          const span = document.createElement('span');
-          span.className = 'iconify';
-          span.dataset.icon = icon;
-          el.textContent = '';
-          el.appendChild(span);
-        }
-      };
-
-      const getWrapStyle = computed((): CSSProperties => {
-        const { size, color } = props;
-        let fs = size;
-        if (isString(size)) {
-          fs = parseInt(size, 10);
-        }
-
-        return {
-          fontSize: `${fs}px`,
-          color: color,
-          display: 'inline-flex',
-        };
-      });
-
-      watch(() => props.icon, update, { flush: 'post' });
-
-      onMounted(update);
-
-      return { elRef, getWrapStyle, isSvgIcon, getSvgIcon };
+    components: { SvgIcon, Icon },
+    data() {
+      return {
+        spin: true
+      }
     },
-  });
-</script>
-<style lang="less">
-  .app-iconify {
-    display: inline-block;
-    // vertical-align: middle;
-
-    &-spin {
-      svg {
-        animation: loadingCircle 1s infinite linear;
+    computed: {
+      isSvgIcon() {
+        return this.iconClass?.endsWith(SVG_END_WITH_FLAG)
+      },
+      getSvgIcon() {
+        return this.iconClass?.replace(SVG_END_WITH_FLAG, '')
       }
     }
+  }
+</script>
+
+<style scoped lang="scss">
+  .app-iconify {
+    display: inline-block;
   }
 
   span.iconify {
     display: block;
     min-width: 1em;
     min-height: 1em;
-    background-color: @iconify-bg-color;
     border-radius: 100%;
   }
 </style>
+
 ```
 
-## 图标选择器
+## Sidebar中icon的使用
 
-### 图标集预生成
+在Sidebar侧边栏中，只能使用svg的方式渲染图标，也就是说不能使用ement-ui库自带的图标，具体代码参考src/layout/components/Sidebar/item.vue
 
-由于图标选择器这个比较特殊的存在，项目会打包一些比较多的图标，图标选择器的图标需要事先指定并生成相应的文件。
+```vue
+render(h, context) {
+    const { icon, title } = context.props
+    const vnodes = []
 
-### 生成
+    if (icon) {
+      vnodes.push(<c-icon icon-class={icon}/>)
+    }
 
-- 执行图标生成命令
-
-```bash
-yarn gen:icon
+    if (title) {
+      if (title.length > 5) {
+        vnodes.push(<span slot='title' title={(title)}>{(title)}</span>)
+      } else {
+        vnodes.push(<span slot='title'>{(title)}</span>)
+      }
+    }
+    return vnodes
+  }
 ```
 
-- 这里会让你选择本地还是在线生成，两种方式各有利弊。如下图所示
+这个组件就是Sidebar侧边栏中，icon以及title显示的地方，可以看到采用了`CIcon`组件去渲染的，`CIcon`组件就是支持2种svg，如果想要支持ement-ui库自带的图标，可自行修改此处代码逻辑。
 
-local 表示本地，online 表示在线，回车确认
 
-![](/images/genIcon.png)
 
-- 选择你要生成的图标集,回车确认
-
-![](/images/selectIconSet.png)
-
-- 选择图标输出的目录(项目默认 src/components/Icon/data)，可以直接回车选择默认
-
-![](/images/outDir.png)
-
-到这里图标集已经生成完成了，此时你的图标选择器已经是你所选的的图标集的图标了。
-
-::: danger 注意不要频繁更新
-
-如果前面选择的是本地生成的话，频繁更换图标集，可能会导致图标丢失或者显示不出来
-
-:::
-
-### 优缺点
-
-- **在线图标(项目默认,推荐)**
-
-该方式会在图标选择器使用到图标的时候进行在线请求,然后缓存对应的图标到浏览器。可以有效减少代码打包体积。
-
-如果你的项目可以访问外网，建议可以使用这种方式
-
-**缺点：** 在局域网或者无法访问到外网的环境中图标显示不出来
-
-- **本地图标**
-
-该方式会在打包的时候将图标选择器的图标全部打包到 js 内。在使用的时候不会额外的请求在线图标
-
-**缺点：** 打包体积会偏大，具体的体积增加得看前面选择图标集的时候选择的图标数量的多少决定
