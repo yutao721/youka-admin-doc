@@ -1,243 +1,414 @@
 # Form 表单组件
 
-对 `antv` 的 form 组件进行封装，扩展一些常用的功能
+## 1. element 自带Form
 
-> 如果文档内没有，可以尝试在在线示例内寻找
+> 具体使用请参考`element-ui`文档，[文档地址](https://element.eleme.cn/#/zh-CN/component/form)
 
-## Usage
+### 特点
 
-### useForm 方式
-
-下面是一个使用简单表单的示例，只有一个输入框
-
-```vue
-<template>
-  <div class="m-4">
-    <BasicForm
-      :labelWidth="100"
-      :schemas="schemas"
-      :actionColOptions="{ span: 24 }"
-      @submit="handleSubmit"
-    />
-  </div>
-</template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
-  import { BasicForm, FormSchema } from '/@/components/Form';
-  import { CollapseContainer } from '/@/components/Container';
-  import { useMessage } from '/@/hooks/web/useMessage';
-  const schemas: FormSchema[] = [
-    {
-      field: 'field',
-      component: 'Input',
-      label: '字段1',
-      colProps: {
-        span: 8,
-      },
-      defaultValue: '1',
-      componentProps: {
-        placeholder: '自定义placeholder',
-        onChange: (e) => {
-          console.log(e);
-        },
-      },
-    },
-  ];
-
-  export default defineComponent({
-    components: { BasicForm, CollapseContainer },
-    setup() {
-      const { createMessage } = useMessage();
-      return {
-        schemas,
-        handleSubmit: (values: any) => {
-          createMessage.success('click search,values:' + JSON.stringify(values));
-        },
-      };
-    },
-  });
-</script>
-```
-
-### template 方式
-
-所有可调用函数见下方 `Methods` 说明
-
-```vue
-<template>
-  <div class="m-4">
-      <BasicForm
-        :schemas="schemas"
-        ref="formElRef"
-        :labelWidth="100"
-        @submit="handleSubmit"
-        :actionColOptions="{ span: 24 }"
-      />
-  <div>
-</template>
-<script lang="ts">
-  import { defineComponent, ref } from 'vue';
-  import { BasicForm, FormSchema, FormActionType, FormProps } from '/@/components/Form';
-  import { CollapseContainer } from '/@/components/Container';
-  const schemas: FormSchema[] = [
-  ];
-
-  export default defineComponent({
-    components: { BasicForm, CollapseContainer },
-    setup() {
-      const formElRef = ref<Nullable<FormActionType>>(null);
-      return {
-        formElRef,
-        schemas,
-        setProps(props: FormProps) {
-          const formEl = formElRef.value;
-          if (!formEl) return;
-          formEl.setProps(props);
-        },
-      };
-    },
-  });
-</script>
-```
-
-## useForm
-
-form 组件还提供了 `useForm`，方便调用函数内部方法
+- `element-ui`在很多后台管理系统中都有使用，都比较熟悉，容易上手。
+- 功能组件丰富，满足大部分表单使用场景。
+- 文档比较齐全
+- 不足的地方就是复杂的Form表单写起来代码量会很多，维护起来不方便。
 
 ### 示例
 
 ```vue
 <template>
-  <BasicForm @register="register" @submit="handleSubmit" />
-</template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
-  import { BasicForm, FormSchema, useForm } from '/@/components/Form/index';
-  import { CollapseContainer } from '/@/components/Container/index';
-  import { useMessage } from '/@/hooks/web/useMessage';
-  const schemas: FormSchema[] = [
-    {
-      field: 'field1',
-      component: 'Input',
-      label: '字段1',
-      colProps: {
-        span: 8,
-      },
-      componentProps: {
-        placeholder: '自定义placeholder',
-        onChange: (e: any) => {
-          console.log(e);
-        },
-      },
-    },
-  ];
+  <div class="app-container">
 
-  export default defineComponent({
-    components: { BasicForm, CollapseContainer },
-    setup() {
-      const { createMessage } = useMessage();
-      const [register, { setProps }] = useForm({
-        labelWidth: 120,
-        schemas,
-        actionColOptions: {
-          span: 24,
-        },
-      });
+    <div class="my-10 px-5 text-bold text-lg text-black">
+      <h1>element 自带Form
+        <el-link type="primary" href="https://element.eleme.cn/#/zh-CN/component/form" target="_blank">文档地址</el-link>
+      </h1>
+    </div>
+
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+      <el-form-item label="活动名称" prop="name">
+        <el-input v-model="ruleForm.name"></el-input>
+      </el-form-item>
+      <el-form-item label="活动区域" prop="region">
+        <el-select v-model="ruleForm.region" placeholder="请选择活动区域">
+          <el-option label="区域一" value="shanghai"></el-option>
+          <el-option label="区域二" value="beijing"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="活动时间" required>
+        <el-col :span="11">
+          <el-form-item prop="date1">
+            <el-date-picker type="date" placeholder="选择日期" v-model="ruleForm.date1" style="width: 100%;"></el-date-picker>
+          </el-form-item>
+        </el-col>
+        <el-col class="line" :span="2">-</el-col>
+        <el-col :span="11">
+          <el-form-item prop="date2">
+            <el-time-picker placeholder="选择时间" v-model="ruleForm.date2" style="width: 100%;"></el-time-picker>
+          </el-form-item>
+        </el-col>
+      </el-form-item>
+      <el-form-item label="即时配送" prop="delivery">
+        <el-switch v-model="ruleForm.delivery"></el-switch>
+      </el-form-item>
+      <el-form-item label="活动性质" prop="type">
+        <el-checkbox-group v-model="ruleForm.type">
+          <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
+          <el-checkbox label="地推活动" name="type"></el-checkbox>
+          <el-checkbox label="线下主题活动" name="type"></el-checkbox>
+          <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
+        </el-checkbox-group>
+      </el-form-item>
+      <el-form-item label="特殊资源" prop="resource">
+        <el-radio-group v-model="ruleForm.resource">
+          <el-radio label="线上品牌商赞助"></el-radio>
+          <el-radio label="线下场地免费"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="活动形式" prop="desc">
+        <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+        <el-button @click="resetForm('ruleForm')">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+  </div>
+</template>
+
+<script>
+  export default {
+    data() {
       return {
-        register,
-        schemas,
-        handleSubmit: (values: any) => {
-          createMessage.success('click search,values:' + JSON.stringify(values));
+        ruleForm: {
+          name: '',
+          region: '',
+          date1: '',
+          date2: '',
+          delivery: false,
+          type: [],
+          resource: '',
+          desc: ''
         },
-        setProps,
+        rules: {
+          name: [
+            { required: true, message: '请输入活动名称', trigger: 'blur' },
+            { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+          ],
+          region: [
+            { required: true, message: '请选择活动区域', trigger: 'change' }
+          ],
+          date1: [
+            { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+          ],
+          date2: [
+            { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
+          ],
+          type: [
+            { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
+          ],
+          resource: [
+            { required: true, message: '请选择活动资源', trigger: 'change' }
+          ],
+          desc: [
+            { required: true, message: '请填写活动形式', trigger: 'blur' }
+          ]
+        }
       };
     },
-  });
+    methods: {
+      submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            alert('submit!');
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+      },
+      resetForm(formName) {
+        this.$refs[formName].resetFields();
+      }
+    }
+  }
 </script>
 ```
 
-### 参数介绍
+## 2.  FormRenderer组件
 
-```ts
-const [register, methods] = useForm(props);
-```
+> 该组件是对`element-ui`中的Form组件进行二次封装，简化了Form表单的操作
 
-**参数 props 内的值可以是 computed 或者 ref 类型**
+### 特点
 
-**register**
+- 使用比较简单，通过items数组的操作，就可以快速完成Form的构建以及校验
+- 扩展性比较强，可以根据业务逻辑封装业务组件插入表单中使用
 
-register 用于注册 `useForm`，如果需要使用 `useForm` 提供的 api，必须将 register 传入组件的 `onRegister`
+### 示例
 
 ```vue
 <template>
-  <BasicForm @register="register" @submit="handleSubmit" />
+  <div class="app-container">
+    <div class="my-10 px-5 text-bold text-lg text-black">
+      <h1>ElFormModel组件</h1>
+    </div>
+
+    <form-renderer
+        class="my-10 w-1/2"
+        ref="form"
+        label-width="190px"
+        :items="items"
+        :readonly="readonly"
+        v-model="form"
+    ></form-renderer>
+    <div class="flex justify-center">
+      <el-button type="primary" @click="handleNextClick">提交认证信息</el-button>
+    </div>
+  </div>
 </template>
+
 <script>
-  export default defineComponent({
-    components: { BasicForm },
-    setup() {
-      const [register] = useForm();
+  import FormRenderer from '@/components/FormRenderer/index';
+
+  export default {
+    components: { FormRenderer },
+    data() {
       return {
-        register,
-      };
+        step: 0,
+        readonly: false,
+        // 表单item
+        items: [
+          {
+            key: 'businessLicenseGroup',
+            label: '上传营业执照',
+            type: 'group',
+            inline: true,
+            list: [
+              {
+                key: 'businessLicense',
+                label: '营业执照',
+                type: 'image',
+                accept: ['.png', '.jpg', '.jpeg'],
+                maxSize: 5 * 1024 * 1024
+              }
+            ]
+          },
+          {
+            key: 'socialCreditCode',
+            label: '统一社会信用代码',
+            placeholder: '15、18位字母数字',
+            type: 'text',
+            max: 18,
+            validator(value) {
+              if (!value || typeof value !== 'string' || ![15, 18].includes(value.length)) {
+                throw new Error('请输入15或18位字母数字');
+              }
+            },
+            disabled(form) {
+              return form.verifyProcess === 10 || form.verifyProcess === 20;
+            }
+          },
+          {
+            key: 'socialCreditOverTime',
+            label: '过期时间',
+            type: 'date',
+            valueFormat: 'yyyyMMdd',
+            hidden(form) {
+              // return form.type !== 30;
+            },
+            disabled(form) {
+              return form.noSocialCreditOverTime;
+            },
+            disabledDate(date) {
+              return date < Date.now();
+            }
+          },
+          {
+            key: 'businessLicenseName',
+            label: '营业执照名称',
+            type: 'text',
+            max: 30,
+            disabled(form) {
+              return form.verifyProcess === 10 || form.verifyProcess === 20;
+            }
+          },
+          {
+            key: 'address',
+            label: '详细地址',
+            type: 'text',
+            max: 50,
+            placeholder: '营业执照上经营场所一栏的完整地址',
+            rules: [
+              {
+                min: 4,
+                message: '长度必须大于或等于4个字符',
+                trigger: 'blur'
+              }
+            ]
+          },
+          {
+            key: 'email',
+            label: '邮箱',
+            placeholder: '请输入企业邮箱',
+            type: 'email',
+            max: 30
+          }
+        ],
+        // 表单model
+        form: {
+          verifyProcess: 10,
+          socialCreditCode: '123124'
+        }
+      }
     },
-  });
+    methods: {
+      async handleNextClick() {
+        try {
+          await this.$refs.form.validate();
+        } catch {
+          return;
+        }
+        // todo 业务逻辑
+
+      }
+
+    }
+  }
 </script>
+
 ```
 
-`Methods`见下方说明
 
-### Methods
 
-**getFieldsValue**
+### 参数介绍
 
-类型: `() => Recordable;`
+| 参数                 | 说明                                                         | 类型    | 可选值                | 默认值 |
+| :------------------- | :----------------------------------------------------------- | :------ | :-------------------- | :----- |
+| value/v-model        | 表单数据对象                                                 | object  | —                     | —      |
+| rules                | 表单验证规则                                                 | object  | —                     | —      |
+| inline               | 行内表单模式                                                 | boolean | —                     | false  |
+| labelPosition        | 表单域标签的位置，如果值为 left 或者 right 时，则需要设置 `label-width` | string  | right/left/top        | right  |
+| labelWidth           | 表单域标签的宽度，例如 '50px'。                              | string  | —                     | —      |
+| items                | 表单中的form-item，详见form-item                             | Array   | —                     | —      |
+| hideRequiredAsterisk | 是否隐藏必填字段的标签旁边的红色星号                         | boolean | —                     | false  |
+| size                 | 用于控制该表单内组件的尺寸                                   | string  | medium / small / mini | —      |
+| readonly             | 是否只读模式,只读模式不会显示表单                            | boolean | —                     | false  |
 
-说明: 获取表单值
+### 方法介绍
 
-**setFieldsValue**
+| 方法名        | 说明                                                         | 参数                                                         |
+| :------------ | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| validate      | 对整个表单进行校验的方法，参数为一个回调函数。该回调函数会在校验结束后被调用，并传入两个参数：是否校验成功和未通过校验的字段。若不传入回调函数，则会返回一个 promise | Function(callback: Function(boolean, object))                |
+| validateField | 对部分表单字段进行校验的方法                                 | Function(props: array \| string, callback: Function(errorMessage: string)) |
+| clearValidate | 移除表单项的校验结果。传入待移除的表单项的 prop 属性或者 prop 组成的数组，如不传则移除整个表单的校验结果 | Function(props: array \| string)                             |
 
-类型: `<T>(values: T) => Promise<void>`
+### provide
 
-说明: 设置表单字段值
+该组件通过provide()方法将该组件的实例传递给了子组件，子组件中通过`inject: ['formRenderer']`可以拿到该组件的实列，有特殊需求的时候可以去操作该实列。
 
-**resetFields**
+### FormItem组件
 
-类型: `()=> Promise<any>`
+> 该组件是对`el-form-item` 的封装，配合`FormRenderer`使用，不同类型有不同参数。
 
-说明: 重置表单值
+```vue
+<template>
+  <el-form ref="form"
+           class="form"
+           :model="value"
+           :rules="rules"
+           :inline="inline"
+           :label-width="labelWidth"
+           :label-position="labelPosition"
+           :hide-required-asterisk="hideRequiredAsterisk || readonly"
+           :validate-on-rule-change="false"
+           :size="size">
+    <template v-for="item in items">
+      <form-item ref="items" :key="item.key" :item="item" v-model="value">
+        <template #default="scope">
+          <slot v-bind="scope"/>
+        </template>
+      </form-item>
+    </template>
+  </el-form>
+</template>
+```
 
-**validateFields**
+从`FormRenderer`的实现来看，FormItem组件接受的props就只有对应的item以及表单数据对象value(也就是Form绑定的数据)。
 
-类型: `(nameList?: NamePath[]) => Promise<any>`
+```js
+{
+  key: 'socialCreditCode',
+  label: '统一社会信用代码',
+  placeholder: '15、18位字母数字',
+  type: 'text',
+  max: 18,
+  validator(value) {
+    if (!value || typeof value !== 'string' || ![15, 18].includes(value.length)) {
+      throw new Error('请输入15或18位字母数字');
+    }
+  },
+  disabled(form) {
+    return form.verifyProcess === 10 || form.verifyProcess === 20;
+  }
+},
+```
 
-说明: 校验指定表单项
+上面这个item只是`FormItem`其中的一个`text`类型,以下是共同拥有的属性和方法
 
-**validate**
+#### type 
 
-类型: `(nameList?: NamePath[]) => Promise<any>`
+- 表单item类型，必传，不传则默认为渲染为element的Input（text）组件。
+- 支持`text`、`textarea` 对应element的Input组件`type="password"`
+- `radio`， 对应element的`radio`组件
+- `checkbox`， 对应element的`checkbox`组件
+- `cascade`， 对应element的`cascade`组件
+- `datetime`， 对应element的`el-date-picker`组件`type=datetime`
+- `date`， 对应element的`el-date-picker`组件`type=date`
+- `datetimerange`， 对应element的`el-date-picker`组件`type=datetimerange`
+- `daterange`， 对应element的`el-date-picker`组件`type=daterange`
+- `files`， 对应封装的`FileUpload`组件
+- `image`， 对应封装的`ImageUpload`组件
+- `limit`,自定义组件，示例
+- `verifyCode`自定义组件，获取验证码
 
-说明: 校验整个表单
+> 目前只支持了这些常用的组件，如需其他类型组件，可以根据需求扩展对应的类型，在`FormItem.vue`文件中加对应的type,然后再引入`element-ui`自带的组件或者是自己封装的业务组件（如`limit`,`verifyCode`）
 
-**submit**
 
-类型: `() => Promise<void>`
 
-说明: 提交表单
+#### key
 
-**scrollToField**
+每一个`FormItem`的唯一值，对应的是`FormRenderer`中model，也就是`element-ui`Form中`el-form-item`组件的prop，必填且唯一。
 
-类型: `(name: NamePath, options?: ScrollOptions) => Promise<void>`
+#### label
 
-说明: 滚动到对应字段位置
+标签文本,比如“用户名：”，“密码：”
 
-**clearValidate**
+#### placeholder
 
-类型: `(name?: string | string[]) => Promise<void>`
+`FormItem`的占位符，并不是所有的type类型都有该字段，`el-form-item`组件支持`placeholder`的话就有这个字段；可以是一个函数。
 
-说明: 清空校验
+#### rules
 
-**setProps**
+校验该表单的规则，具体参考[element文档](https://element.eleme.cn/#/zh-CN/component/form)
+
+#### validator(value,form)
+
+- 接受的是一个函数
+- value代表输入（input等）或者选择（radio等）的值
+- form是`FormRenderer`绑定的model,传入是为了做更复杂的校验或者表单联动
+
+#### disabled(form)
+
+- 接受布尔值或者一个返回布尔值的函数，为true则不能操作该条表单item
+- form是`FormRenderer`绑定的model,传入是为了做更复杂的校验或者表单联动
+
+#### hidden(form)
+
+- 接受布尔值或者一个返回布尔值的函数，为true则不显示该条表单item
+- form是`FormRenderer`绑定的model,传入是为了做更复杂的校验或者表单联动
+
+:::tip
+
+asd
 
 ::: tip
 

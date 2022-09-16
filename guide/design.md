@@ -4,38 +4,27 @@
 
 主要介绍如何在项目中使用和规划样式文件。
 
-默认使用 less 作为预处理语言，建议在使用前或者遇到疑问时学习一下 [Less](http://lesscss.org/) 的相关特性（如果想获取基础的 CSS 知识或查阅属性，请参考 [MDN 文档](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Reference)）。
+默认使用 scss 作为预处理语言，建议在使用前或者遇到疑问时学习一下 scss的相关特性（如果想获取基础的 CSS 知识或查阅属性，请参考 [MDN 文档](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Reference)）。
 
-项目中使用的通用样式，都存放于 [src/design/](https://github.com/vbenjs/vue-vben-admin/tree/main/src/design) 下面。
+项目中使用的通用样式，都存放于src/assets/styles下面。
 
 ```bash
 .
-├── ant # ant design 一些样式覆盖
-├── color.less # 颜色
-├── index.less # 入口
-├── public.less # 公共类
-├── theme.less # 主题相关
-├── config.less  # 每个组件都会自动引入样式
-├── transition # 动画相关
-└── var # 变量
+├── btn.scss # 一些按钮的样式
+├── element-ui.scss # 复写element-ui的样式
+├── element-variables.scss # 复写element-ui中的变量
+├── index.scss # 入口
+├── mixin.scss # scss中定义的mixin方法
+├── public.scss # 公共通用样式
+├── sidebar.less  # sidebar组件样式
+├── transition.scss # 动画相关
+└── variables.scss # 变量
 
 ```
 
-::: tip 全局注入
+## windicss
 
-config.less 这个文件会被全局注入到所有文件，所以在页面内可以直接使用变量而不需要手动引入
-
-:::
-
-```html
-<style lang="less" scoped>
-  // 这里已经隐式注入了 config.less
-</style>
-```
-
-## tailwindcss(2.5.0+)
-
-项目中引用到了 [tailwindcss](https://tailwindcss.com/docs),具体可以见文件使用说明。
+项目中使用了 [windicss](https://windicss.org/)，具体参见文档使用说明。
 
 语法如下:
 
@@ -43,27 +32,11 @@ config.less 这个文件会被全局注入到所有文件，所以在页面内�
 <div class="relative w-full h-full px-4"></div>
 ```
 
-## windicss(2.5.0 已弃用)
 
-项目中使用了 [windicss](https://windicss.org/)，具体参见文件使用说明。
 
-语法如下:
+## 为什么使用 Scss
 
-```html
-<div class="relative w-full h-full px-4"></div>
-```
-
-::: danger 注意事项
-
-windcss 目前会造成本地开发内存溢出，所以后续可能会考虑切换到 TailwindCss，两者基本相同。
-
-所以尽量少用 Windicss 新增的特性，防止后续切换成本高。
-
-:::
-
-## 为什么使用 Less
-
-主要是因为 Ant Design 默认使用 less 作为样式语言，使用 Less 可以跟其保持一致。
+主要是因为 element-ui 默认使用scss 作为样式语言，使用  Scss 可以跟其保持一致。
 
 ## 开启 scoped
 
@@ -92,78 +65,106 @@ windcss 目前会造成本地开发内存溢出，所以后续可能会考虑切
 使用 scoped 后，父组件的样式将不会渗透到子组件中，所以可以使用以下方式解决：
 
 ```vue
-<style scoped>
-  /* deep selectors */
-  ::v-deep(.foo) {
-  }
-  /* shorthand */
-  :deep(.foo) {
-  }
-
-  /* targeting slot content */
-  ::v-slotted(.foo) {
-  }
-  /* shorthand */
-  :slotted(.foo) {
-  }
-
-  /* one-off global rule */
-  ::v-global(.foo) {
-  }
-  /* shorthand */
-  :global(.foo) {
+<style scoped lang="scss">
+::v-deep {
+    .el-scrollbar__bar {
+      bottom: 0px;
+    }
+    .el-scrollbar__wrap {
+      height: 49px;
+    }
   }
 </style>
 ```
 
-## CSS Modules
+## windiscss集成
 
-针对样式覆盖问题，还有一种方案是使用 CSS Modules 模块化方案。使用方式如下。
+1.Windi CSS简介
+
+   Windi CSS 是下一代工具优先的 CSS 框架。如果你已经熟悉了 Tailwind CSS，可以把 Windi CSS 看作是按需供应的 Tailwind 替代方案，它为你提供了更快的加载体验，完美兼容 Tailwind v2.0，并且拥有很多额外的酷炫功能。
+
+​	通过扫描 HTML 和 CSS 按需生成工具类（utilities），Windi CSS 致力于在开发中提供 [更快的加载体验](https://twitter.com/antfu7/status/1361398324587163648) 以及更快的 HMR，并且在生产环境下无需对 CSS 进行 Purge（一种在生产环境中对未使用的 CSS 进行清除而节省体积的技术）。
+
+2.安装vue-cli-plugin-windicss插件
+
+```bash
+yarn add -D vue-cli-plugin-windicss
+```
+
+3.在vue.config.js文件中配置插件
+
+```js
+//vue.config.js
+ 
+module.exports = {
+  pluginOptions: {
+    windicss: {
+      // 具体配置请查看 https://github.com/windicss/vite-plugin-windicss/blob/main/packages/plugin-utils/src/options.ts
+    },
+  },
+}
+```
+
+4.在main入口文件引入样式
+
+```js
+import 'windi.css'
+// import 'virtual:windi.css'
+```
+
+5.使用示例
 
 ```vue
 <template>
-  <span :class="$style.span1">hello</span>
+  <div class="app-container">
+    <h3>windicss 使用</h3>
+    <div class="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
+      <div class="flex-shrink-0">
+        <img class="h-12 w-12" src="@/assets/logo/logo.png" alt="Logo">
+      </div>
+      <div>
+        <div class="text-xl font-medium text-black">ChitChat</div>
+        <p class="text-gray-500">You have a new message!</p>
+      </div>
+    </div>
+
+    <div class="h-12 w-12 mt-10"></div>
+
+    <div class="py-8 px-8 max-w-sm mx-auto bg-white rounded-xl shadow-md space-y-2 sm:(py-4 flex items-center space-y-0 space-x-6)">
+      <img class="block mx-auto h-24 rounded-full sm:(mx-0 flex-shrink-0)" src="@/assets/logo/logo.png" alt="Woman's Face"/>
+      <div class="text-center space-y-2 sm:text-left">
+        <div class="space-y-0.5">
+          <p class="text-lg text-black font-semibold">Erin Lindford</p>
+          <p class="text-gray-500 font-medium">Product Engineer</p>
+        </div>
+        <button class="px-4 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:(text-white bg-purple-600 border-transparent) focus:(outline-none ring-2 ring-purple-600 ring-offset-2)">
+          Message
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-  import { useCSSModule } from 'vue';
-
-  export default {
-    setup(props, context) {
-      const $style = useCSSModule();
-      const moduleAStyle = useCSSModule('moduleA');
-      return {
-        $style,
-        moduleAStyle,
-      };
-    },
-  };
+  export default {}
 </script>
 
-<style lang="less" module>
-  .span1 {
-    color: green;
-    font-size: 30px;
-  }
-</style>
 
-<style lang="less" module="moduleA">
-  .span1 {
-    color: green;
-    font-size: 30px;
-  }
-</style>
 ```
 
-## 重复引用问题
+6.vscode插件推荐
 
-加上 **reference** 可以解决页面内重复引用导致实际生成的 style 样式表重复的问题。
+在vscode编辑器中可以通过安装`Windi CSS Intellisense`插件，来提高 Windi 的开发体验，例如：自动补全、语法高亮、代码折叠和构建。
 
-这步已经全局引入了。所以**可以不写**，直接使用变量
+7.扩展
 
-```vue
-<style lang="less" scoped>
-  /* 该行代码已全局引用。可以不用单独引入 */
-  @import (reference) '../../design/config.less';
-<style>
-```
+Atomic CSS原⼦ CSS 是⼀种 CSS 架构⽅法，传统⽅法使⽤预 处理器编译后⽣成样式，但是体积⼤。（类似⾏内样式，但是 ⾏内样式缺点：冗余）
+
+- Tailwind依赖 PostCSS 和 Autoprefixer + purgeCSS,开发 环境 css 体积⼤ 
+- Windi CSS是⼀种 Tailwind CSS 替代品，不依赖，按需使 ⽤。采⽤预扫描的⽅式⽣成样式。 但是⾃定义复杂~~
+- [unocss](https://github.com/unocss/unocss)是原⼦ CSS 引擎，规则定义简单易读。⽀持预设、 ⽀持属性、纯 css 图标
+
+> Tailwind在项目集成的过程中由于PostCSS版本的问题，选择了按需使用的`Windicss`,UnoCSS 是一个具有高性能且极具灵活性的即时原子化 CSS 引擎，受 Windi CSS、Tailwind CSS、Twind 的启发。UnoCSS 是一个**引擎**，而非一款**框架**，因为它**并未提供核心工具类**，所有功能可以通过预设和内联配置提供。默认情况下，UnoCSS 应用[默认预设](https://github.com/antfu/unocss/tree/main/packages/preset-uno)。它提供了流行的实用程序优先框架的通用超集，包括 Tailwind CSS、Windi CSS、Bootstrap、Tachyons 等.
+
+UnoCSS 在vite中支持友好，在webpack中有部分样式会不生效，因此选择了`windicss`。
+
