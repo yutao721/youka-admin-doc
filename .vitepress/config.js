@@ -17,6 +17,12 @@ module.exports = {
     editLinkText: '为此页提供修改建议',
     nav: createNav(),
     sidebar: createSidebar()
+  },
+  markdown: {
+    config: (md) => {
+      const { demoBlockPlugin } = require('vitepress-theme-demoblock')
+      md.use(demoBlockPlugin)
+    }
   }
 };
 

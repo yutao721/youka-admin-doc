@@ -369,8 +369,9 @@
 - `image`， 对应封装的`ImageUpload`组件
 - `limit`,自定义组件，示例
 - `verifyCode`自定义组件，获取验证码
+- `group`复合组件，list: Item[]
 
-> 目前只支持了这些常用的组件，如需其他类型组件，可以根据需求扩展对应的类型，在`FormItem.vue`文件中加对应的type,然后再引入`element-ui`自带的组件或者是自己封装的业务组件（如`limit`,`verifyCode`）
+> 目前只支持了这些type类型，如需其他类型组件，可以根据需求扩展对应的类型，在`FormItem.vue`文件中加对应的type,然后再引入`element-ui`自带的组件或者是自己封装的业务组件（如`limit`,`verifyCode`）
 
 
 
@@ -406,571 +407,369 @@
 - 接受布尔值或者一个返回布尔值的函数，为true则不显示该条表单item
 - form是`FormRenderer`绑定的model,传入是为了做更复杂的校验或者表单联动
 
-:::tip
 
-asd
 
-::: tip
+### 自行添加需要的组件类型
 
-设置表单的 props 可以直接在标签上传递，也可以使用 setProps，或者初始化直接写 useForm(props)
+在 `src/components/FormRenderer/FormItem.vue` 内，添加相应的类型 `type`
 
-:::
+#### 方式 1
 
-类型: `(formProps: Partial<FormProps>) => Promise<void>`
-
-说明: 设置表单 Props
-
-**removeSchemaByFiled**
-
-类型: `(field: string | string[]) => Promise<void>`
-
-说明: 根据 field 删除 Schema
-
-**appendSchemaByField**
-
-类型: `( schema: FormSchema, prefixField: string | undefined, first?: boolean | undefined ) => Promise<void>`
-
-说明: 插入到指定 filed 后面，如果没传指定 field，则插入到最后,当 first = true 时插入到第一个位置
-
-**updateSchema**
-
-类型: `(data: Partial<FormSchema> | Partial<FormSchema>[]) => Promise<void>`
-
-说明: 更新表单的 schema, 只更新函数所传的参数
-
-e.g
-
-```ts
-updateSchema({ field: 'filed', componentProps: { disabled: true } });
-updateSchema([
-  { field: 'filed', componentProps: { disabled: true } },
-  { field: 'filed1', componentProps: { disabled: false } },
-]);
-```
-
-## Props
-
-::: tip 温馨提醒
-
-除以下参数外，官方文档内的 props 也都支持，具体可以参考 [antv form](https://2x.antdv.com/components/form-cn/#Form)
-
-:::
-
-| 属性 | 类型 | 默认值 | 可选值 | 说明 | 版本 |
-| --- | --- | --- | --- | --- | -- |
-| schemas | `Schema[]` | - | - | 表单配置，见下方 `FormSchema` 配置 |  |
-| submitOnReset | `boolean` | `false` | - | 重置时是否提交表单 |  |
-| labelCol | `Partial<ColEx>` | - | - | 整个表单通用 LabelCol 配置 |  |
-| wrapperCol | `Partial<ColEx>` | - | - | 整个表单通用 wrapperCol 配置 |  |
-| baseColProps | `Partial<ColEx>` | - | - | 配置所有选子项的 ColProps，不需要逐个配置，子项也可单独配置优先与全局 |  |
-| baseRowStyle | `object` | - | - | 配置所有 Row 的 style 样式 |  |
-| labelWidth | `number , string` | - | - | 扩展 form 组件，增加 label 宽度，表单内所有组件适用，可以单独在某个项覆盖或者禁用 |  |
-| labelAlign | `string` | - | `left`,`right` | label 布局 |  |
-| mergeDynamicData | `object` | - | - | 额外传递到子组件的参数 values |  |
-| autoFocusFirstItem | `boolean` | `false` | - | 是否聚焦第一个输入框，只在第一个表单项为 input 的时候作用 |  |
-| compact | `boolean` | `false` | `true/false` | 紧凑类型表单，减少 margin-bottom |  |
-| size | `string` | `default` | `'default' , 'small' , 'large'` | 向表单内所有组件传递 size 参数,自定义组件需自行实现 size 接收 |  |
-| disabled | `boolean` | `false` | `true/false` | 向表单内所有组件传递 disabled 属性，自定义组件需自行实现 disabled 接收 |  |
-| autoSetPlaceHolder | `boolean` | `true` | ` true/false` | 自动设置表单内组件的 placeholder，自定义组件需自行实现 |  |
-| autoSubmitOnEnter | `boolean` | `false` | ` true/false` | 在input中输入时按回车自动提交 | 2.4.0  |
-| rulesMessageJoinLabel | `boolean` | `false` | `true/false` | 如果表单项有校验，会自动生成校验信息，该参数控制是否将字段中文名字拼接到自动生成的信息后方 |  |
-| showAdvancedButton | `boolean` | `false` | `true/false` | 是否显示收起展开按钮 |  |
-| emptySpan | `number , Partial<ColEx>` | 0 | - | 空白行格,可以是数值或者 col 对象 数 |  |
-| autoAdvancedLine | `number` | 3 | - | 如果 showAdvancedButton 为 true，超过指定行数行默认折叠 |  |
-| alwaysShowLines  | `number` | 1 | - | 折叠时始终保持显示的行数  | 2.7.1 |
-| showActionButtonGroup | `boolean` | `true` | `true/false` | 是否显示操作按钮(重置/提交) | |
-| actionColOptions | `Partial<ColEx>` | - | - | 操作按钮外层 Col 组件配置，如果开启 showAdvancedButton，则不用设置，具体见下方 actionColOptions |  |
-| showResetButton | `boolean` | `true` | - | 是否显示重置按钮 |  |
-| resetButtonOptions | `object` |  | - | 重置按钮配置见下方 ActionButtonOption |  |
-| showSubmitButton | `boolean` | `true` | - | 是否显示提交按钮 |  |
-| submitButtonOptions | `object` |  | - | 确认按钮配置见下方 ActionButtonOption |  |
-| resetFunc | ` () => Promise<void>` |  | - | 自定义重置按钮逻辑`() => Promise<void>;` |  |
-| submitFunc | ` () => Promise<void>` |  | - | 自定义提交按钮逻辑`() => Promise<void>;` |  |
-| fieldMapToTime | `[string, [string, string], string?][]` |  | - | 用于将表单内时间区域的应设成 2 个字段,见下方说明 |  |
-
-### ColEx
-
-见[src/components/Form/src/types/index.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/components/Form/src/types/index.ts)
-
-### ActionButtonOption
-
-[BasicButtonProps](https://github.com/vbenjs/vue-vben-admin/tree/main/src/components/Button/types.ts)
-
-```ts
-export interface ButtonProps extends BasicButtonProps {
-  text?: string;
-}
-```
-
-### fieldMapToTime
-
-将表单内时间区域的值映射成 2 个字段
-
-如果表单内有时间区间组件，获取到的值是一个数组，但是往往我们传递到后台需要是 2 个字段
-
-```ts
-useForm({
-  fieldMapToTime: [
-    // data为时间组件在表单内的字段，startTime，endTime为转化后的开始时间于结束时间
-    // 'YYYY-MM-DD'为时间格式，参考moment
-    ['datetime', ['startTime', 'endTime'], 'YYYY-MM-DD'],
-    // 支持多个字段
-    ['datetime1', ['startTime1', 'endTime1'], 'YYYY-MM-DD HH:mm:ss'],
-  ],
-});
-
-// fieldMapToTime没写的时候表单获取到的值
-{
-  datetime: [Date(),Date()]
-}
-//  ['datetime', ['startTime', 'endTime'], 'YYYY-MM-DD'],之后
-{
-    datetime: [Date(),Date()],
-    startTime: '2020-08-12',
-    endTime: '2020-08-15',
-}
-```
-
-### FormSchema
-
-| 属性 | 类型 | 默认值 | 可选值 | 说明 |
-| --- | --- | --- | --- | --- |
-| field | `string` | - | - | 字段名 |
-| label | `string` | - | - | 标签名 |
-| subLabel | `string` | - | - | 二级标签名灰色 |
-| suffix | `string , number , ((values: RenderCallbackParams) => string / number);` | - | - | 组件后面的内容 |
-| changeEvent | `string` | - | - | 表单更新事件名称 |
-| helpMessage | `string , string[]` | - | - | 标签名右侧温馨提示 |
-| helpComponentProps | `HelpComponentProps` | - | - | 标签名右侧温馨提示组件 props,见下方 HelpComponentProps |
-| labelWidth | `string , number` | - | - | 覆盖统一设置的 labelWidth |
-| disabledLabelWidth | `boolean` | false | true/false | 禁用 form 全局设置的 labelWidth,自己手动设置 labelCol 和 wrapperCol |
-| component | `string` | - | - | 组件类型，见下方 ComponentType |
-| componentProps | `any,()=>{}` | - | - | 所渲染的组件的 props |
-| rules | `ValidationRule[]` | - | - | 校验规则,见下方 ValidationRule |
-| required | `boolean` | - | - | 简化 rules 配置，为 true 则转化成 [{required:true}]。`2.4.0`之前的版本只支持string类型的值 |
-| rulesMessageJoinLabel | `boolean` | false | - | 校验信息是否加入 label |
-| itemProps | `any` | - | - | 参考下方 FormItem |
-| colProps | `ColEx` | - | - | 参考上方 actionColOptions |
-| defaultValue | `object` | - | - | 所渲渲染组件的初始值 |
-| render | `(renderCallbackParams: RenderCallbackParams) => VNode / VNode[] / string` | - | - | 自定义渲染组件 |
-| renderColContent | `(renderCallbackParams: RenderCallbackParams) => VNode / VNode[] / string` | - | - | 自定义渲染组件（需要自行包含 formItem） |
-| renderComponentContent | `(renderCallbackParams: RenderCallbackParams) => any / string` | - | - | 自定义渲染组内部的 slot |
-| slot | `string` | - | - | 自定义 slot，渲染组件 |
-| colSlot | `string` | - | - | 自定义 slot，渲染组件 （需要自行包含 formItem） |
-| show | ` boolean / ((renderCallbackParams: RenderCallbackParams) => boolean)` | - | - | 动态判断当前组件是否显示，css 控制，不会删除 dom |
-| ifShow | ` boolean / ((renderCallbackParams: RenderCallbackParams) => boolean)` | - | - | 动态判断当前组件是否显示，js 控制，会删除 dom |
-| dynamicDisabled | `boolean / ((renderCallbackParams: RenderCallbackParams) => boolean) ` | - | - | 动态判断当前组件是否禁用 |
-| dynamicRules | `boolean / ((renderCallbackParams: RenderCallbackParams) => boolean)` | - | - | 动态判返当前组件你校验规则 |
-
-**RenderCallbackParams**
-
-```ts
-export interface RenderCallbackParams {
-  schema: FormSchema;
-  values: any;
-  model: any;
-  field: string;
-}
-```
-
-**componentProps**
-
-- 当值为对象类型时,该对象将作为`component`所对应组件的的 props 传入组件
-
-- 当值为一个函数时候
-
-参数有 4 个
-
-`schema`: 表单的整个 schemas
-
-`formActionType`: 操作表单的函数。与 useForm 返回的操作函数一致
-
-`formModel`: 表单的双向绑定对象，这个值是响应式的。所以可以方便处理很多操作
-
-`tableAction`: 操作表格的函数，与 useTable 返回的操作函数一致。注意该参数只在表格内开启搜索表单的时候有值，其余情况为`null`,
+添加`elemnet-ui`组件库中现有的formItem,例如，`el-el-switch`
 
 ```tsx
-{
-  // 简单例子，值改变的时候操作表格或者修改表单内其他元素的值
-  component:'Input',
-  componentProps: ({ schema, tableAction, formActionType, formModel }) => {
+<el-switch
+  v-else-if="item.type === 'switch'"
+  v-model="value"
+  active-color="#13ce66"
+  inactive-color="#ff4949">
+</el-switch>
+```
+
+#### 方式 2
+
+添加基础或者业务组件，参考`limit`,`getVerifyCode`,`ImageUpload`等组件，这个是添加一些复杂的组件，来满足业务需求。
+
+## 3.  elFormSchema组件
+
+### [文档地址](http://efs.apidevelop.com/)
+
+### 特点
+
+- 第三方基于schema的Form表单组件
+- 基于熟悉的 element-ui 表单组件，同时支持（自定义组件 和 slot）方案
+- 只需要简单的schema数据配置，就能完成表单业务
+- el-form-schema内置了 array、table、object 组件，来满足更加复杂的业务场景
+
+### 功能
+
+1. 支持 `element-ui` 所有的表单组件
+2. 内置支持 `object`、`array`、`table`，可以高效解决更多复杂的业务场景（此处应该有掌声👏）
+3. 内置支持 `slot` 的插槽方式
+4. 内置支持给组件设置 inline 行内布局属性，让布局更加灵活
+5. 内置支持给 `object`、`array` 设置 `inline` 的方式
+6. 支持 `label/slot/title` 设置模板字符串
+7. `vif` 在 false 情况下，自动清空组件
+8. 支持组件 props 设置联动值
+9. `object` 组件内置支持 card 和 fieldset 的布局类型，`array` 内置支持 card 的布局方式。
+10. 支持组件之间的复杂联动，支持 vif: `字符串表达式`、props: { disabled: `字符串表达式` }、required: `字符串表达式` 和 rules: { required: `字符串表达式`, message:'必填'}
+11. 支持引入自定义组件，如果要实现双向绑定使用（注意：前提该组件实现了`v-model`的语法糖）
+12. 支持统一设置组件宽度
+
+### el-form-schema 属性
+
+| 字段           | 说明                                                         | 类型                    | 默认值 |
+| -------------- | ------------------------------------------------------------ | ----------------------- | ------ |
+| schema         | schema对象                                                   | 参考schema对象👇         | -      |
+| v-model        | 表单数据对象                                                 | el-form-schema 自动收集 | -      |
+| labelWidth     | 表单域标签的宽度，例如 '50px'。作为 Form 直接子元素的 form-item 会继承该值。支持 auto。 | string                  | -      |
+| labelPosition  | 表单域标签的位置，如果值为 left 或者 right 时，则需要设置 label-width | string                  | right  |
+| labelSuffix    | 表单域标签的后缀                                             | string                  | -      |
+| expandNumber   | [展开/收起]数量,主要用于查询表单的场景                       | number                  | -      |
+| inline         | 行内表单模式                                                 | boolean                 | false  |
+| size           | 用于控制该表单内组件的尺寸                                   | string                  | medium |
+| disabled       | 是否禁用该表单内的所有组件。若设置为 true，则表单内组件上的 disabled 属性不再生效 | boolean                 | -      |
+| isSearchForm   | 是否是查询表单                                               | boolean                 | false  |
+| isExpand       | 是否展开                                                     | boolean                 | false  |
+| componentWidth | 统一组件宽度                                                 | string                  | 240px  |
+| useEnterSearch | 使用enter按键查询                                            | bool                    | true   |
+| apiConfig      | 配置接口（专门为 el-select、el-radio、el-checkbox 组件的items数据源配置，详见：[动态数据 (opens new window)](http://efs.apidevelop.com/guide/apiConfig.html#apiconfig-方法)） | Function                | -      |
+
+###  el-form-schema 方法
+
+| 方法名        | 说明                                                         | 参数                  |
+| ------------- | ------------------------------------------------------------ | --------------------- |
+| validate      | 对整个表单进行校验的方法，参数为一个回调函数。该回调函数会在校验结束后被调用，并传入两个参数：是否校验成功和未通过校验的字段。若不传入回调函数，则会返回一个 promise｜Function(callback: Function(boolean, object)) |                       |
+| validateField | 对部分表单字段进行校验的方法                                 | Function(props: array |
+| resetFields   | 对整个表单进行重置，将所有字段值重置为初始值并移除校验结果   | —                     |
+| clearValidate | 移除表单项的校验结果。传入待移除的表单项的 prop 属性或者 prop 组成的数组，如不传则移除整个表单的校验结果 | Function(props: array |
+
+除了以上el-form的方法，内部还扩展了一个 `validateFieldPromise` 方法(详见用法：Array->自定义，来弥补 validateField 的问题。
+
+### el-form-schema 事件
+
+isSearchForm属性值为true，查询表单会提供 submit 和 reset 2个事件
+
+| 字段   | 说明      |
+| ------ | --------- |
+| submit | 提交表单  |
+| reset  | 重置表单  |
+| expand | 展开/收起 |
+
+### schema 属性值
+
+| 字段                | 说明                                                   | 类型                                                         | 默认值                        |
+| ------------------- | ------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------- |
+| tag                 | 组件名字                                               | el-*(表单组件)、内置组件、自定义组件                         | -                             |
+| label               | 标签文本                                               | string                                                       | -                             |
+| default             | 默认值                                                 | bool/string/number/object/array                              | -                             |
+| items               | 数据项（专门为el-select/el-radio/el-checkbox的属性）   | array/object                                                 | []                            |
+| keys                | 字段映射（专门为el-select/el-radio/el-checkbox的属性） | object                                                       | {label:'label',value:'value'} |
+| inline              | 是否行内布局                                           | boolean                                                      | false                         |
+| vif                 | 是否显示                                               | 字符串表达式，比如: vif: "$model.id === 2"                   | -                             |
+| rules               | 验证规范                                               | el-form-item（rules）                                        | -                             |
+| required            | 是否必填                                               | el-form-item（required）                                     | -                             |
+| tip                 | 文字提示                                               | string                                                       | -                             |
+| slot                | 占位                                                   | 对象                                                         | -                             |
+| labelWidthComponent | 子组件labelWidth                                       | 专门为 array/object/table 提供的                             | -                             |
+| components          | 组件集合                                               | 专门为 array/object/table 提供的                             | -                             |
+| class               | 类名class                                              | 专门为 array/object/table 提供的                             | -                             |
+| props               | 属性值                                                 | [vue render (opens new window)](https://cn.vuejs.org/v2/guide/render-function.html#深入数据对象)（props对象） | -                             |
+| style               | 样式                                                   | [vue render (opens new window)](https://cn.vuejs.org/v2/guide/render-function.html#深入数据对象)（style对象） | -                             |
+| on                  | 事件                                                   | [vue render (opens new window)](https://cn.vuejs.org/v2/guide/render-function.html#深入数据对象)（on对象） | -                             |
+
+###  内置组件
+
+table ，object, array组件
+
+### 组件篇🌟
+
+#### 表单组件
+
+
+
+```
+  <template>
+  <div>
+    <p>{{ model }}</p>
+    <el-form-schema
+      :schema="schema"
+      v-model="model"
+      :inline="false"
+      ref="efs"
+      label-width="120px"
+      :api-config="getApiConfig"
+    >
+    <el-form-item>
+        <el-button type="primary" @click="submit">提交</el-button>
+        <el-button @click="reset">重置</el-button>
+      </el-form-item>
+    </el-form-schema>
+  </div>
+</template>
+<script>
+export default {
+  data() {
     return {
-      // xxxx props
-      onChange:(e)=>{
-        const {reload}=tableAction
-        reload()
-        // or
-        formModel.xxx='123'
+      schema: {
+        text: {
+          tag: "text",
+          label: "文字",
+          default: "hello world!"
+        },
+        input1: {
+          tag: "el-input",
+          label: "输入框"
+        },
+        input2: {
+          tag: "el-input",
+          label: "输入框",
+          slot: { append: "测试" }
+        },
+        input3: {
+          tag: "el-input",
+          label: "输入框",
+          slot: { prepend: "测试" }
+        },
+        radio: {
+          tag: "el-radio",
+          label: "${model.input1}-${model.input2}",
+          keys: { label: 'name', value: 'id' },
+          items: "$config.foo"
+        },
+        radioButton: {
+          tag: "el-radio",
+          label: "复选框",
+          type: "button",
+          items: ["蛋壳公寓", "原油宝", "优胜教育"],
+          initValue: "蛋壳公寓"
+        },
+        bool: {
+          tag: "el-checkbox",
+          label: "bool单选",
+          items: [
+            { label: "", value: true },
+            { label: "否", value: false }
+          ]
+        },
+        select1: {
+          tag: "el-select",
+          label: "下拉框1",
+          keys: { label: 'name', value: 'id' },
+          items: "$config.bar",
+          slot: {
+            after: {
+              tag: "el-input",
+              vmodel: "test",
+              style: { width: "100px" }
+            }
+          }
+        },
+        select2: {
+          tag: "el-select",
+          label: "下拉框2 (int)",
+          keys: {label: 'label', value: 'id'},
+          default: -1,
+          items:  [{
+            label:"全部",
+            id: 0,
+          }, {
+            label: "蛋壳公寓", 
+            id: 1,
+          }, {
+            label: "优胜教育",
+            id: -1
+          }]
+        },
+        select3: {
+          tag: "el-select",
+          label: "下拉分组🌟",
+          group: { label: 'label', children: 'options' },
+          slot: { after: "注意设置：group: { label: 'label', children: 'options' }" },
+          default: "Shanghai",
+          items:  [{
+            label: '热门城市',
+            options: [{
+              value: 'Shanghai',
+              label: '上海'
+            }, {
+              value: 'Beijing',
+              label: '北京'
+            }]
+          }]
+        },
+        checkbox: {
+          tag: "el-checkbox",
+          label: "复选框",
+          items: ["蛋壳公寓", "原油宝", "优胜教育"]
+        },
+        checkboxButton: {
+          tag: "el-checkbox",
+          label: "复选框",
+          type: "button",
+          items: ["蛋壳公寓", "原油宝", "优胜教育"],
+          initValue: ["蛋壳公寓"]
+        },
+        cascader: {
+          tag: "el-cascader",
+          label: "级联选择器",
+          props: { options: [], filterable: true }
+        },
+        swtich: { 
+          tag: "el-switch", 
+          label: "复选框",
+          default: true,
+        },
+        slider: {
+          tag: "el-slider",
+          label: "滑块",
+          props: { step: 10, showStops: true }
+        },
+        date: {
+          tag: "el-date-picker",
+          label: "日期",
+          props: { type: "date" }
+        },
+        daterange: {
+          tag: "el-date-picker",
+          label: "日期范围",
+          props: { type: "daterange" }
+        },
+        datetimerange: {
+          tag: "el-date-picker",
+          label: "日期时间范围",
+          props: { type: "datetimerange" }
+        },
+        timeselect: {
+          tag: "el-time-select",
+          label: "固定时间点",
+          props: {
+            pickerOptions: {
+              start: "08:30",
+              step: "00:15",
+              end: "22:30"
+            }
+          }
+        },
+        timepicker: {
+          tag: "el-time-picker",
+          label: "时间选择器",
+          props: { placeholder: "请选择时间" }
+        },
+        color: {
+          tag: "el-color-picker",
+          label: "颜色选择器"
+        },
+        upload: {
+          tag: "el-upload",
+          label: "上传组件",
+          props: {
+            listType: "picture-card",
+            action: "https://jsonplaceholder.typicode.com/posts/"
+          },
+          slot: {
+            default: { tag: "i", class: "el-icon-plus" }
+          }
+        }
+      },
+      model: {
+        input1: "hello world!",
+        select1: 1,
+        test: "123456"
       }
     };
-  };
-}
+  },
+  methods: {
+    submit() {
+      this.$refs.efs.validate(valid => {
+        alert(valid);
+      });
+    },
+    reset() {
+      this.$refs.efs.resetFields();
+    },
+    arrayData(num) {
+      return new Array(num)
+        .fill({})
+        .map((item, index) => ({ label: `测试-${index}`, value: index + 1 }));
+    },
+    async getApiConfig() {
+      const foo = await new Promise(r => {
+        setTimeout(() => 
+          r([{ id: 1, name: '动态数据1' }, { id: 2, name: '动态数据2' }])
+        , 500);
+      });
+      const bar = await new Promise(r => {
+        setTimeout(() => 
+          r([{ id: 1, name: 'bar1' }, { id: 2, name: 'bar2' }])
+        , 500);
+      });
+      return { foo, bar };
+    }
+  },
+  mounted() {
+    setTimeout(()=> { 
+      this.schema.select3.items = ["A", "B", "C"];
+    }, 5000)
+  }
+};
+</script>
 ```
+# Button 按钮
 
-**HelpComponentProps**
+::: demo 使用`type`，`plain`，`round`来定义 Button 的样式
 
-```ts
-export interface HelpComponentProps {
-  maxWidth: string;
-  // 是否显示序号
-  showIndex: boolean;
-  // 文本列表
-  text: any;
-  // 颜色
-  color: string;
-  // 字体大小
-  fontSize: string;
-  icon: string;
-  absolute: boolean;
-  // 定位
-  position: any;
-}
+```vue
+<template>
+  Small
+  <button style="color: red">按钮1</button>
+  Middle
+  <button type="size">按钮2</button>
+  Large
+  <button>按钮3</button>
+  Disabled
+  <button disabled>按钮4</button>
+</template>
 ```
-
-**ComponentType**
-
-schema 内组件的可选类型
-
-```tsx
-export type ComponentType =
-  | 'Input'
-  | 'InputGroup'
-  | 'InputPassword'
-  | 'InputSearch'
-  | 'InputTextArea'
-  | 'InputNumber'
-  | 'InputCountDown'
-  | 'Select'
-  | 'ApiSelect'
-  | 'TreeSelect'
-  | 'RadioButtonGroup'
-  | 'RadioGroup'
-  | 'Checkbox'
-  | 'CheckboxGroup'
-  | 'AutoComplete'
-  | 'Cascader'
-  | 'DatePicker'
-  | 'MonthPicker'
-  | 'RangePicker'
-  | 'WeekPicker'
-  | 'TimePicker'
-  | 'Switch'
-  | 'StrengthMeter'
-  | 'Upload'
-  | 'IconPicker'
-  | 'Render'
-  | 'Slider'
-  | 'Rate'
-  | 'Divider';  // v2.7.2新增
-```
-### Divider schema说明
-`Divider`类型用于在`schemas`中占位，将会渲染成一个分割线（始终占一整行的版面），可以用于较长表单的版面分隔。请只将Divider类型的schema当作一个分割线，而不是一个常规的表单字段。
-- **`Divider`仅在`showAdvancedButton`为false时才会显示**（也就是说如果启用了表单收起和展开功能，`Divider`将不会显示）
-- `Divider` 使用`schema`中的`label`以及`helpMessage`来渲染分割线中的提示内容
-- `Divider` 可以使用`componentProps`来设置除`type`之外的props
-- `Divider` 不会渲染`AFormItem`，因此`schema`中除`label`、`componentProps`、`helpMessage`、`helpComponentProps`以外的属性不会被用到
-
-## 自行添加需要的组件类型
-
-在 `src/components/Form/src/componentMap.ts` 内，添加需要的组件，并在上方 **ComponentType** 添加相应的类型 key
-
-### 方式 1
-
-这种写法适用与适用频率较高的组件
-
-```tsx
-componentMap.set('componentName', 组件);
-
-// ComponentType
-export type ComponentType = xxxx | 'componentName';
-```
-
-### 方式 2
-
-使用 **useComponentRegister** 进行注册
-
-这种写法只能在当前页使用，页面销毁之后会从 componentMap 删除相应的组件
-
-```tsx
-import { useComponentRegister } from '@/components/form/index';
-
-import { StrengthMeter } from '@/components/strength-meter/index';
-
-useComponentRegister('StrengthMeter', StrengthMeter);
-```
-
-::: tip 提示
-
-方式 2 出现的原因是为了减少打包体积，如果某个组件体积很大，用方式 1 的话可能会使首屏体积增加
 
 :::
-
-### render
-
-自定义渲染内容
-
-```vue
-<template>
-  <div class="m-4">
-    <BasicForm @register="register" @submit="handleSubmit" />
-  </div>
-</template>
-<script lang="ts">
-  import { defineComponent, h } from 'vue';
-  import { BasicForm, FormSchema, useForm } from '/@/components/Form/index';
-  import { useMessage } from '/@/hooks/web/useMessage';
-  import { Input } from 'ant-design-vue';
-  const schemas: FormSchema[] = [
-    {
-      field: 'field1',
-      component: 'Input',
-      label: '字段1',
-      colProps: {
-        span: 8,
-      },
-      rules: [{ required: true }],
-      render: ({ model, field }) => {
-        return h(Input, {
-          placeholder: '请输入',
-          value: model[field],
-          onChange: (e: ChangeEvent) => {
-            model[field] = e.target.value;
-          },
-        });
-      },
-    },
-    {
-      field: 'field2',
-      component: 'Input',
-      label: '字段2',
-      colProps: {
-        span: 8,
-      },
-      rules: [{ required: true }],
-      renderComponentContent: () => {
-        return {
-          suffix: () => 'suffix',
-        };
-      },
-    },
-  ];
-  export default defineComponent({
-    components: { BasicForm },
-    setup() {
-      const { createMessage } = useMessage();
-      const [register, { setProps }] = useForm({
-        labelWidth: 120,
-        schemas,
-        actionColOptions: {
-          span: 24,
-        },
-      });
-      return {
-        register,
-        schemas,
-        handleSubmit: (values: any) => {
-          createMessage.success('click search,values:' + JSON.stringify(values));
-        },
-        setProps,
-      };
-    },
-  });
-</script>
-```
-
-### slot
-
-自定义渲染内容
-
-::: tip 提示
-
-使用插槽自定义表单域时，请注意antdv有关FormItem的[相关说明](https://2x.antdv.com/components/form-cn#API)。
-
-:::
-
-```vue
-<template>
-  <div class="m-4">
-    <BasicForm @register="register">
-      <template #customSlot="{ model, field }">
-        <a-input v-model:value="model[field]" />
-      </template>
-    </BasicForm>
-  </div>
-</template>
-<script lang="ts">
-  import { defineComponent } from 'compatible-vue';
-  import { BasicForm, useForm } from '@/components/Form/index';
-  import { BasicModal } from '@/components/modal/index';
-  export default defineComponent({
-    name: 'FormDemo',
-    setup(props) {
-      const [register] = useForm({
-        labelWidth: 100,
-        actionColOptions: {
-          span: 24,
-        },
-        schemas: [
-          {
-            field: 'field1',
-            label: '字段1',
-            slot: 'customSlot',
-          },
-        ],
-      });
-      return {
-        register,
-      };
-    },
-  });
-</script>
-```
-
-### ifShow/show/dynamicDisabled
-
-自定义显示/禁用
-
-```vue
-<template>
-  <div class="m-4">
-    <BasicForm @register="register" />
-  </div>
-</template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
-  import { BasicForm, FormSchema, useForm } from '/@/components/Form/index';
-  const schemas: FormSchema[] = [
-    {
-      field: 'field1',
-      component: 'Input',
-      label: '字段1',
-      colProps: {
-        span: 8,
-      },
-      show: ({ values }) => {
-        return !!values.field5;
-      },
-    },
-    {
-      field: 'field2',
-      component: 'Input',
-      label: '字段2',
-      colProps: {
-        span: 8,
-      },
-      ifShow: ({ values }) => {
-        return !!values.field6;
-      },
-    },
-    {
-      field: 'field3',
-      component: 'DatePicker',
-      label: '字段3',
-      colProps: {
-        span: 8,
-      },
-      dynamicDisabled: ({ values }) => {
-        return !!values.field7;
-      },
-    },
-  ];
-
-  export default defineComponent({
-    components: { BasicForm },
-    setup() {
-      const [register, { setProps }] = useForm({
-        labelWidth: 120,
-        schemas,
-        actionColOptions: {
-          span: 24,
-        },
-      });
-      return {
-        register,
-        schemas,
-        setProps,
-      };
-    },
-  });
-</script>
-```
-
----
-
-见 [antv form](https://2x.antdv.com/components/form-cn/#%E6%A0%A1%E9%AA%8C%E8%A7%84%E5%88%99)
-
-## Slots
-
-| 名称          | 说明         |
-| ------------- | ------------ |
-| formFooter    | 表单底部区域 |
-| formHeader    | 表单顶部区域 |
-| resetBefore   | 重置按钮前   |
-| submitBefore  | 提交按钮前   |
-| advanceBefore | 展开按钮前   |
-| advanceAfter  | 展开按钮后   |
-
-## ApiSelect
-
-远程下拉加载组件，该组件可以用于学习参考如何自定义组件集成到 Form 组件内，将自定义组件交由 Form 去管理
-
-### Usage
-
-```ts
-const schemas: FormSchema[] = [
-  {
-    field: 'field',
-    component: 'ApiSelect',
-    label: '字段',
-  },
-];
-```
-
-### Props
-
-| 属性 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| numberToString | `boolean` | `false` | 是否将`number`值转化为`string` |
-| api | `()=>Promise<{ label: string; value: string; disabled?: boolean }[]>` | - | 数据接口，接受一个 Promise 对象 |
-| params | `object` | - | 接口参数。此属性改变时会自动重新加载接口数据 |
-| resultField | `string` | - | 接口返回的字段，如果接口返回数组，可以不填。支持`x.x.x`格式 |
-| labelField | `string` | `label` | 下拉数组项内`label`显示文本的字段，支持`x.x.x`格式 |
-| valueField | `string` | `value` | 下拉数组项内`value`实际值的字段，支持`x.x.x`格式 |
-| immediate | `boolean` | `true` | 是否立即请求接口，否则将在第一次点击时候触发请求 |
-
-
-## ApiTreeSelect
-
-远程下拉树加载组件，和`ApiSelect`类似，2.6.1以上版本
-
-
-### Props
-
-| 属性 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| api | `()=>Promise<{ label: string; value: string; children?: any[] }[]>` | - | 数据接口，接受一个 Promise 对象 |
-| params | `object` | - | 接口参数。此属性改变时会自动重新加载接口数据 |
-| resultField | `string` | - | 接口返回的字段，如果接口返回数组，可以不填。支持`x.x.x`格式 |
-| immediate | `boolean` | `true` | 是否立即请求接口。 |
-
-## RadioButtonGroup
-
-Radio Button 风格的选择按钮
-
-### Usage
-
-```ts
-const schemas: FormSchema[] = [
-  {
-    field: 'field',
-    component: 'RadioButtonGroup',
-    label: '字段',
-  },
-];
-```
-
-### Props
-
-| 属性    | 类型                                                     | 默认值 | 说明     |
-| ------- | -------------------------------------------------------- | ------ | -------- |
-| options | `{ label: string; value: string; disabled?: boolean }[]` | -      | 数据字段 |
