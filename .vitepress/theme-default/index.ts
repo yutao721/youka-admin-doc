@@ -5,7 +5,9 @@ import './styles/custom-blocks.css'
 import './styles/sidebar-links.css'
 
 import { Theme } from 'vitepress'
+// @ts-ignore
 import Layout from './Layout.vue'
+// @ts-ignore
 import NotFound from './NotFound.vue'
 
 const theme: Theme = {

@@ -9,7 +9,7 @@ const config: UserConfig = {
     entries: 'index.md'
   },
   server: {
-    port: 9593
+    port: 9511
   },
   plugins: [
     Components({

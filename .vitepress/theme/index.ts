@@ -8,12 +8,7 @@ import './styles/var.css';
 import './styles/custom.css';
 import './styles/layout.css';
 import './styles/code-theme.css';
-import { registerComponents } from './register-components'
 
 export default {
   ...Theme,
-  // @ts-ignore
-  enhanceApp({ app, router, siteData }) {
-    registerComponents(app)
-  }
 };
