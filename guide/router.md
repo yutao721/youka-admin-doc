@@ -4,6 +4,8 @@
 
 本项目侧边栏和路由是绑定在一起的，所以你只有在 `@/router/index.js` 下面配置对应的路由，侧边栏就能动态的生成了。大大减轻了手动重复编辑侧边栏的工作量。当然这样就需要在配置路由的时候遵循一些约定的规则。
 
+> `src/router/modules`用于存放路由模块，是为了把路由按照模块分割，避免`@/router/index.js`过大;目前modules中存放的都是demo中所使用到的路由页面，正式项目可以把这些删除，并在`@/router/index.js`中相应的删除。
+
 ## 配置项
 
 首先我们了解一下本项目配置路由时提供了哪些配置项。
@@ -33,8 +35,6 @@ meta: {
 }
 ```
 
-<br/>
-
 **示例：**
 
 ```js
@@ -59,22 +59,19 @@ meta: {
 }
 ```
 
-<br>
-
 ## 路由
 
 这里的路由分为两种，`constantRoutes` 和 `asyncRoutes`。
 
-**constantRoutes：** 代表那些不需要动态判断权限的路由，如登录页、404、等通用页面。
+**constantRoutes：** 代表那些不需要动态判断权限的路由，如登录页、404、等通用页面，在`@/router/index.js`配置对应的公共路由。
 
-**asyncRoutes：** 代表那些需求动态判断权限并通过 `addRoutes` 动态添加的页面。
+**asyncRoutes：** 代表那些需求动态判断权限并通过 `addRoutes` 动态添加的页面，在`@/store/modules/permission.js`加载后端接口路由配置。
 
-具体的会在 [权限验证](permission.md) 页面介绍。
+具体的会在 [权限验证](auth.md) 页面介绍。
 
-::: tip
-这里所有的路由页面都使用 `路由懒加载` 了 ，具体介绍见[文档](/zh/guide/advanced/lazy-loading.html)
-
-如果你想了解更多关于 browserHistory 和 hashHistory，请参看 [构建和发布](/zh/guide/essentials/deploy.html)。
+::: tip 
+- 动态路由可以在系统管理-菜单管理进行新增和修改操作，前端加载会自动请求接口获取菜单信息并转换成前端对应的路由。
+- 动态路由在生产环境下会默认使用路由懒加载，实现方式参考loadView方法的判断。
 :::
 
 其它的配置和 [vue-router](https://router.vuejs.org/zh-cn/) 官方并没有区别，自行查看文档。
@@ -82,8 +79,6 @@ meta: {
 ::: warning 注意事项
 如果这里有一个需要非常注意的地方就是 `404` 页面一定要最后加载，如果放在 constantRoutes 一同声明了 `404` ，后面的所有页面都会被拦截到`404` ，详细的问题见 [addRoutes when you've got a wildcard route for 404s does not work](https://github.com/vuejs/vue-router/issues/1176)
 :::
-
-<br>
 
 ## 侧边栏
 
@@ -126,97 +121,10 @@ meta: {
 }
 ```
 
-::: tip unique-opened
-你可以在[Sidebar/index.vue](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)中设置`unique-opened`来控制侧边栏，是否只保持一个子菜单的展开。
-:::
-
-## 多级目录(嵌套路由)
-
-如果你的路由是多级目录，如本项目 [@/views/nested](https://github.com/PanJiaChen/vue-element-admin/tree/master/src/views/nested) 那样， 有三级路由嵌套的情况下，**不要忘记还要手动在二级目录的根文件下添加一个 `<router-view>`**。
-
-```html
- <!-- 父级路由组件  -->
-<template>
-  <div>
-    <!-- xxx html 内容  -->
-    <router-view />
-  </div>
-</template>
-```
-
-如：[@/views/nested/menu1/index.vue](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/views/nested/menu1/index.vue)，原则上有多少级路由嵌套就需要多少个`<router-view>`。
-
-![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/9459de62-64d0-4819-9730-daf3f9889018.png)
-
-<br/>
-
-## 点击侧边栏 刷新当前路由
-
-在用 spa(单页面应用) 这种开发模式之前，用户每次点击侧边栏都会重新请求这个页面，用户渐渐养成了点击侧边栏当前路由来刷新 view 的习惯。但现在 spa 就不一样了，用户点击当前高亮的路由并不会刷新 view，因为 vue-router 会拦截你的路由，它判断你的 url 并没有任何变化，所以它不会触发任何钩子或者是 view 的变化。[issue](https://github.com/vuejs/vue-router/issues/296) 地址，社区也对该问题展开了激烈讨论。
-
-![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/5d0b0391-ea6a-45f2-943e-aff5dbe74d12.png)
-
-尤大本来也说要增加一个方法来强刷 view，但后来他又改变了心意/(ㄒ o ㄒ)/~~。但需求就摆在这里，我们该怎么办呢？他说了不改变 current URL 就不会触发任何东西，那我可不可以强行触发你的 hook 呢？上有政策， 下有对策我们变着花来 hack。方法也很简单，通过不断改变 url 的 query 来触发 view 的变化。我们监听侧边栏每个 link 的 click 事件，每次点击都给 router push 一个不一样的 query 来确保会重新刷新 view。
-
-```js
-clickLink(path) {
-  this.$router.push({
-    path,
-    query: {
-      t: +new Date() //保证每次点击路由的query项都是不一样的，确保会重新刷新view
-    }
-  })
-}
-```
-
-ps:不要忘了在 `router-view` 加上一个特定唯一的 `key`，如 `<router-view :key="$route.path"></router-view>`，
-但这也有一个弊端就是 url 后面有一个很难看的 `query` 后缀如 `xxx.com/article/list?t=1496832345025`
-
-你可以从前面的 issue 中知道还有很多其它方案。我本人在公司项目中，现在采取的方案是判断当前点击的菜单路由和当前的路由是否一致，若一致的时候，会先跳转到一个专门 Redirect 的页面，它会将路由重定向到我想去的页面，这样就起到了刷新的效果了。
-
-**相关例子**
-
-![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/0dd7f78b-0fb5-4c7d-8236-cee78f960984.jpg)
-
-点击图片所示的全局 size 大小切换按钮，你会发现 页面 `app-main`区域进行了刷新。它就是运用了重定向到 `Redirect`页面之后再重定向回原始页面的方法。
-
-点击的时候重定向页面至 `/redirect`
-
-```js
-const { fullPath } = this.$route
-this.$router.replace({
-  path: '/redirect' + fullPath
-})
-```
-
-`redirect` 页面在重定向回原始页面
-
-```js
-// redirect.vue
-// https://github.com/PanJiaChen/vue-element-admin/blob/master/src/views/redirect/index.vue
-export default {
-  beforeCreate() {
-    const { params, query } = this.$route
-    const { path } = params
-    this.$router.replace({ path: '/' + path, query })
-  },
-  render: function(h) {
-    return h() // avoid warning message
-  }
-}
-```
-
-<br>
-
 ## 面包屑
 
 本项目中也封装了一个面包屑导航，它也是通过 `watch $route` 变化动态生成的。它和 menu 也一样，也可以通过之前那些配置项控制一些路由在面包屑中的展现。大家也可以结合自己的业务需求增改这些自定义属性。比如可以在路由中声明`breadcrumb:false`，让其不在 breadcrumb 面包屑显示。
 
-![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/4c60b3fc-febd-4e22-9150-724dcbd25a8e.gif)
-
-::: tip 代码地址
-[@/components/Breadcrumb](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/components/Breadcrumb/index.vue)
-:::
 
 ## 侧边栏滚动问题
 
@@ -234,11 +142,8 @@ overflow-y: scroll;
 
 所以现版本中使用了 `el-scrollbar` 来处理侧边栏滚动问题。
 
-::: tip 代码地址
-[@/layout/components/Sidebar](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)
-:::
 
-## 侧边栏 外链 <Badge text="v3.8.2+"/>
+## 侧边栏 外链
 
 你也可以在侧边栏中配置一个外链，只要你在 `path` 中填写了合法的 url 路径，当你点击侧边栏的时候就会帮你新开这个页面。
 
@@ -250,35 +155,119 @@ overflow-y: scroll;
   "component": Layout,
   "children": [
     {
-      "path": "https://github.com/PanJiaChen/vue-element-admin",
-      "meta": { "title": "externalLink", "icon": "link" }
+      "path": "https://github.com/yutao721/youka-admin",
+      "meta": { "title": "externalLink", "icon": "link|svg" }
     }
   ]
 }
 ```
 
-## 侧边栏默认展开
+## 侧边栏 图标
 
-某些场景下，用户需要默认展开侧边栏的某些`sub-menu`，如下图：
+图标使用详细可以查看[图标](/dep/icon.md) 
 
-<img :src="$withBase('/images/default-openeds.jpg')" alt="default-openeds.jpg" width="250px">
+在Sidebar侧边栏中，只能使用svg的方式渲染图标，也就是说不能使用ement-ui库自带的图标，具体代码参考src/layout/components/Sidebar/item.vue
 
-可以通过`default-openeds`来进行设置，首先找到 [侧边栏代码](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)
+```vue
+render(h, context) {
+    const { icon, title } = context.props
+    const vnodes = []
 
-```html
- <el-menu
-        :default-openeds="['/example','/nested']" // 添加本行代码
-        :default-active="activeMenu"
-        :collapse="isCollapse"
-        :background-color="variables.menuBg"
-        :text-color="variables.menuText"
-        :unique-opened="false"
-        :active-text-color="variables.menuActiveText"
-        :collapse-transition="false"
-        mode="vertical"
-      >
-        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" />
-      </el-menu>
+    if (icon) {
+      vnodes.push(<c-icon icon-class={icon}/>)
+    }
+
+    if (title) {
+      if (title.length > 5) {
+        vnodes.push(<span slot='title' title={(title)}>{(title)}</span>)
+      } else {
+        vnodes.push(<span slot='title'>{(title)}</span>)
+      }
+    }
+    return vnodes
+  }
 ```
 
-**注意 :default-openeds="['/example','/nested']" 里面填写的是 submenu 的 route-path**
+这个组件就是Sidebar侧边栏中，icon以及title显示的地方，可以看到采用了`CIcon`组件去渲染的，`CIcon`组件就是支持2种svg，如果想要支持ement-ui库自带的图标，可自行修改此处代码逻辑。
+
+- 使用项目本地svg示例, 如`chart|svg`
+
+```js
+{
+  path: '/charts',
+    component: Layout,
+  redirect: 'noRedirect',
+  name: 'Charts',
+  meta: { title: '图表', icon: 'chart|svg' },
+  children: [
+    {
+      path: 'keyboard',
+      component: () => import('@/views/demo/charts/keyboard'),
+      name: 'KeyboardChart',
+      meta: { title: '键盘图表', noCache: true }
+    },
+    {
+      path: 'line',
+      component: () => import('@/views/demo/charts/line'),
+      name: 'LineChart',
+      meta: { title: '折线图', noCache: true }
+    },
+    {
+      path: 'mix-chart',
+      component: () => import('@/views/demo/charts/mix-chart'),
+      name: 'MixChart',
+      meta: { title: '混合图表', noCache: true }
+    }
+  ]
+}
+```
+
+- 使用 [Iconify](https://iconify.design/)查询的值，如`logos:element`
+
+  ```js
+  {
+    'name': 'Form',
+    'path': '/form',
+    'hidden': false,
+    'redirect': 'noRedirect',
+    'component': Layout,
+    'alwaysShow': true,
+    'meta': { 'title': '表单', 'icon': 'tool|svg', 'noCache': false, 'link': null },
+    'children': [
+      {
+        'name': 'Element',
+        'path': 'element',
+        'hidden': false,
+        component: () => import('@/views/demo/feat/form/element'),
+        'meta': { 'title': 'element', 'icon': 'logos:element', 'noCache': false, 'link': null }
+      },
+      {
+        'name': 'ElFormSchema',
+        'path': 'elFormSchema',
+        'hidden': false,
+        component: () => import('@/views/demo/feat/form/elFormSchema'),
+        'meta': { 'title': 'elFormSchema', 'icon': 'file-icons:json-1', 'noCache': false, 'link': null }
+      },
+      {
+        'name': 'ElFormModel',
+        'path': 'elFormModel',
+        'hidden': false,
+        component: () => import('@/views/demo/feat/form/elFormModel'),
+        'meta': { 'title': 'elFormModel', 'icon': 'carbon:model', 'noCache': false, 'link': null }
+      },
+      {
+        'name': 'ElFormRenderer',
+        'path': 'elFormRenderer',
+        'hidden': false,
+        component: () => import('@/views/demo/feat/form/elFormRenderer'),
+        'meta': { 'title': 'elFormRenderer', 'icon': 'carbon:model', 'noCache': false, 'link': null }
+      }
+  
+    ]
+  }
+  ```
+
+  
+
+
+

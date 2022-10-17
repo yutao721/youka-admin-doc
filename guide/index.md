@@ -44,25 +44,11 @@
 
 ```bash
 # clone 代码
-git clone https://github.com/vbenjs/vue-vben-admin.git
+git clone git@github.com:yutao721/youka-admin.git
 
 ```
 
-### 从 Gitee 获取代码
 
-如果从 github clone 代码较慢的话，可以尝试用 [Gitee](https://gitee.com/annsion/vue-vben-admin) 同步代码到自己的仓库，再 clone 下来即可。
-
-也可以通过下方地址进行 clone
-
-```bash
-git clone https://gitee.com/annsion/vue-vben-admin.git
-```
-
-::: warning 注意
-
-[Gitee](https://gitee.com/annsion/vue-vben-admin)的代码可能不是最新的
-
-:::
 
 ## 安装
 
@@ -133,13 +119,13 @@ yarn
 
 该命令会先删除 `node_modules`、`yarn.lock`、`package.lock.json` 后再进行依赖重新安装（安装速度会明显变慢）。
 
-接下来你可以修改代码进行业务开发了。我们内建了模拟数据、HMR 实时预览、状态管理、国际化、全局路由等各种实用的功能辅助开发，请阅读其他章节了解更多。
 
-## 目录说明
+
+## 使用淘宝镜像安装
 
 ```bash
-
-
-
+npm install --registry=https://registry.npmmirror.com
 ```
+
+
 

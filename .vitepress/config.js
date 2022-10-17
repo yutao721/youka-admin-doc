@@ -300,15 +300,11 @@ function createSidebar() {
             link: '/guide/component'
           },
           {
-            text: '路由',
+            text: '路由&菜单',
             link: '/guide/router'
           },
           {
-            text: '菜单',
-            link: '/guide/menu'
-          },
-          {
-            text: '权限',
+            text: '权限验证',
             link: '/guide/auth'
           },
           {
