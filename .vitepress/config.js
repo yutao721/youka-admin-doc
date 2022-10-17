@@ -208,8 +208,12 @@ function createSidebar() {
             link: '/components/flow-chart'
           },
           {
-            text: 'Upload',
+            text: 'FileUpload',
             link: '/components/upload'
+          },
+          {
+            text: 'ImageUpload',
+            link: '/components/uploadImage'
           },
           {
             text: 'Tree',

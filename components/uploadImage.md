@@ -1,26 +1,26 @@
-# FileUpload
+# ImageUpload
 
-文件上传组件，组件有2种模式，2种模式都是以element-ui中`el-upload`组件为基础，封装而成。
+图片上传组件，组件有2种模式，2种模式都是以element-ui中`el-upload`组件为基础，封装而成。
 
 ## 2种组件区别介绍
 
-- FileUpload/index.vue该组件是以action模式上传文件，需要提供上传的图片服务器地址（默认为/common/upload，需要服务端开发）
-- FileUpload/uploadByOss.vue该组件是oss签名直传，需要服务的提供一个获取oss信息的接口即可，前端直接上传到oss
+- ImageUpload/index.vue该组件是以action模式上传图片，需要提供上传的图片服务器地址（默认为/common/upload，需要服务端开发）
+- ImageUpload/uploadByOss.vue该组件是oss签名直传，需要服务的提供一个获取oss信息的接口即可，前端直接上传到oss
 
 > 目前大多数项目都会选择使用oss来做文件存储，采用第二种前端直接上传到oss,减轻了服务的压力，所以更推荐使用oss直传的方式，当然也可以根据自身需求来选择使用哪种组件
 
 ## 全局组件以及局部组件中的使用
 
-`FileUpload`在`main.js`中已经被注册成了全局组件
+`ImageUpload`在`main.js`中已经被注册成了全局组件
 
 ```js
-// 文件上传组件 action模式
-// import FileUpload from '@/components/FileUpload'
+// 图片上传组件 action模式
+// import ImageUpload from '@/components/ImageUpload'
 
-// 文件上传组件 oss签名直传
-import FileUpload from '@/components/FileUpload/uploadByOss'
+// 图片上传组件 oss签名直传
+import ImageUpload from '@/components/ImageUpload/uploadByOss'
 
-Vue.component('FileUpload', FileUpload)
+Vue.component('ImageUpload', ImageUpload)
 ```
 
 可以根据自身的需求选择这个地方的组件引用，就可以切换2中不同的模式。
@@ -51,58 +51,56 @@ Vue.component('FileUpload', FileUpload)
 ```vue
 <template>
   <div class="app-container">
-
-    <h3 class="text-3xl my-10">上传文件示例</h3>
-
     <div class="my-10">
-      <h3 class="my-5">1.上传文件(组件默认值)</h3>
-      <FileUpload v-model="fileList"></FileUpload>
+      <h3 class="my-5">1.上传图片(组件默认值)</h3>
+      <ImageUpload v-model="fileList"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">2.上传文件(limit限制1个)</h3>
-      <FileUpload v-model="fileList" :limit="limit"></FileUpload>
+      <h3 class="my-5">2.上传图片(limit限制1张)</h3>
+      <ImageUpload v-model="fileList" :limit="limit"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">3.上传文件(文件大小限制)</h3>
-      <FileUpload v-model="fileList" :fileSize="fileSize"></FileUpload>
+      <h3 class="my-5">3.上传图片(文件大小限制)</h3>
+      <ImageUpload v-model="fileList" :fileSize="fileSize"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">4.上传文件(是否显示提示)</h3>
-      <FileUpload v-model="fileList" :isShowTip="isShowTip"></FileUpload>
+      <h3 class="my-5">4.上传图片(是否显示提示)</h3>
+      <ImageUpload v-model="fileList" :isShowTip="isShowTip"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">5.上传文件(是否禁用)</h3>
-      <FileUpload v-model="fileList" :disabled="disabled"></FileUpload>
+      <h3 class="my-5">5.上传图片(是否禁用)</h3>
+      <ImageUpload v-model="fileList" :disabled="disabled"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">6.上传文件(是否支持多选文件)</h3>
-      <FileUpload v-model="fileList" :multiple="multiple"></FileUpload>
+      <h3 class="my-5">6.上传图片(是否支持多选文件)</h3>
+      <ImageUpload v-model="fileList" :multiple="multiple"></ImageUpload>
     </div>
 
     <div class="my-10">
-      <h3 class="my-5">7.上传文件(文件类型 仅支持doc)</h3>
-      <FileUpload v-model="fileList" :fileType="fileType"></FileUpload>
+      <h3 class="my-5">7.上传图片(文件类型 仅支持png)</h3>
+      <ImageUpload v-model="fileList" :fileType="fileType"></ImageUpload>
     </div>
+
   </div>
 </template>
 
 <script>
-  // oss 上传文件组件
-  import FileUpload from '@/components/FileUpload/uploadByOss'
+  // oss 上传图片组件
+  import ImageUpload from '@/components/ImageUpload/uploadByOss'
 
   export default {
-    components: { FileUpload },
+    components: { ImageUpload },
     data() {
       return {
         fileList: [
           {
-            name: '1.text',
-            url: 'https://zhuoyou-shop-test.oss-cn-hangzhou.aliyuncs.com/upload/images/新建文本文档_1663667207383.txt'
+            name: '1',
+            url: 'https://zhuoyou-shop-test.oss-cn-hangzhou.aliyuncs.com/upload/images/avatar_1663653848646.png'
           }
         ],
         limit: 1,
@@ -110,8 +108,7 @@ Vue.component('FileUpload', FileUpload)
         isShowTip: false,
         disabled: true,
         multiple: true,
-        fileType: ['doc'],
-        mark: 'sd'
+        fileType: ['png']
       }
     }
   }
@@ -123,13 +120,12 @@ Vue.component('FileUpload', FileUpload)
 
 | 属性              | 类型       | 默认值   | 可选值 | 说明                                     |
 | ----------------- | ---------- | -------- | ------ | ---------------------------------------- |
-| value             | `string[]` | -        | -      | 已上传的文件列表，支持v-model           |
-| showFileList | `boolean`  | true     | -      | 是否显示文件展示列表                         |
+| value             | `string[]` | -        | -      | 已上传的图片列表，支持v-model           |
 | isShowTip  | `boolean`  | true    | -      | 是否显示提示               |
-| fileSize           | `number`   | 5        | -      | 单个文件最大体积，单位 M                 |
+| fileSize           | `number`   | 5        | -      | 单个图片最大体积，单位 M                 |
 | limit         | `number`   | 5 | -      | 最大上传数量          |
-| fileType            | `string[]` | `['doc', 'xls', 'ppt', 'txt', 'pdf']`       | -      | 限制上传格式，例如 `['doc', 'xls', 'ppt', 'txt', 'pdf']` |
-| multiple          | `boolean`  | false        | -      | 开启多文件上传                           |
+| fileType            | `string[]` | `['png', 'jpg', 'jpeg']`       | -      | 限制上传格式，例如 `['png', 'jpg', 'jpeg']` |
+| multiple          | `boolean`  | false        | -      | 开启多图片上传                           |
 | disabled      | `boolean`      | false        | -      | 是否禁用                           |
 
 ## plugins/uploadFile.js
