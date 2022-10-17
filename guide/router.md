@@ -1,403 +1,284 @@
-# 路由
+# 路由和侧边栏
 
-项目路由配置存放于 [src/router/routes](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/routes) 下面。 [src/router/routes/modules](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/routes/modules)用于存放路由模块，在该目录下的文件会自动注册。
+路由和侧边栏是组织起一个后台应用的关键骨架。
 
-## 配置
+本项目侧边栏和路由是绑定在一起的，所以你只有在 `@/router/index.js` 下面配置对应的路由，侧边栏就能动态的生成了。大大减轻了手动重复编辑侧边栏的工作量。当然这样就需要在配置路由的时候遵循一些约定的规则。
 
-### 模块说明
+## 配置项
 
-在 [src/router/routes/modules](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/routes/modules) 内的 `.ts` 文件会被视为一个路由模块。
+首先我们了解一下本项目配置路由时提供了哪些配置项。
 
-一个路由模块包含以下结构
-
-```ts
-import type { AppRouteModule } from '/@/router/types';
-
-import { LAYOUT } from '/@/router/constant';
-import { t } from '/@/hooks/web/useI18n';
-
-const dashboard: AppRouteModule = {
-  path: '/dashboard',
-  name: 'Dashboard',
-  component: LAYOUT,
-  redirect: '/dashboard/analysis',
-  meta: {
-    icon: 'ion:grid-outline',
-    title: t('routes.dashboard.dashboard'),
-  },
-  children: [
-    {
-      path: 'analysis',
-      name: 'Analysis',
-      component: () => import('/@/views/dashboard/analysis/index.vue'),
-      meta: {
-        affix: true,
-        title: t('routes.dashboard.analysis'),
-      },
-    },
-    {
-      path: 'workbench',
-      name: 'Workbench',
-      component: () => import('/@/views/dashboard/workbench/index.vue'),
-      meta: {
-        title: t('routes.dashboard.workbench'),
-      },
-    },
-  ],
-};
-export default dashboard;
+```js
+// 当设置 true 的时候该路由不会在侧边栏出现 如401，login等页面，或者如一些编辑页面/edit/1
+hidden: true // (默认 false)
+//当设置 noRedirect 的时候该路由在面包屑导航中不可被点击
+redirect: 'noRedirect'
+// 当你一个路由下面的 children 声明的路由大于1个时，自动会变成嵌套的模式--如组件页面
+// 只有一个时，会将那个子路由当做根路由显示在侧边栏--如引导页面
+// 若你想不管路由下面的 children 声明的个数都显示你的根路由
+// 你可以设置 alwaysShow: true，这样它就会忽略之前定义的规则，一直显示根路由
+alwaysShow: true
+name: 'router-name' // 设定路由的名字，一定要填写不然使用<keep-alive>时会出现各种问题
+meta: {
+  roles: ['admin', 'editor'] // 设置该路由进入的权限，支持多个权限叠加
+  title: 'title' // 设置该路由在侧边栏和面包屑中展示的名字
+  icon: 'svg-name' // 设置该路由的图标，支持 svg-class，也支持 el-icon-x element-ui 的 icon
+  noCache: true // 如果设置为true，则不会被 <keep-alive> 缓存(默认 false)
+  breadcrumb: false //  如果设置为false，则不会在breadcrumb面包屑中显示(默认 true)
+  affix: true // 如果设置为true，它则会固定在tags-view中(默认 false)
+  // 当路由设置了该属性，则会高亮相对应的侧边栏。
+  // 这在某些场景非常有用，比如：一个文章的列表页路由为：/article/list
+  // 点击文章进入文章详情页，这时候路由为/article/1，但你想在侧边栏高亮文章列表的路由，就可以进行如下设置
+  activeMenu: '/article/list'
+}
 ```
 
-### 多级路由
+<br/>
+
+**示例：**
+
+```js
+{
+  path: '/permission',
+  component: Layout,
+  redirect: '/permission/index', //重定向地址，在面包屑中点击会重定向去的地址
+  hidden: true, // 不在侧边栏显示
+  alwaysShow: true, //一直显示根路由
+  meta: { roles: ['admin','editor'] }, //你可以在根路由设置权限，这样它下面所有的子路由都继承了这个权限
+  children: [{
+    path: 'index',
+    component: ()=>import('permission/index'),
+    name: 'permission',
+    meta: {
+      title: 'permission',
+      icon: 'lock', //图标
+      roles: ['admin','editor'], //或者你可以给每一个子路由设置自己的权限
+      noCache: true // 不会被 <keep-alive> 缓存
+    }
+  }]
+}
+```
+
+<br>
+
+## 路由
+
+这里的路由分为两种，`constantRoutes` 和 `asyncRoutes`。
+
+**constantRoutes：** 代表那些不需要动态判断权限的路由，如登录页、404、等通用页面。
+
+**asyncRoutes：** 代表那些需求动态判断权限并通过 `addRoutes` 动态添加的页面。
+
+具体的会在 [权限验证](permission.md) 页面介绍。
+
+::: tip
+这里所有的路由页面都使用 `路由懒加载` 了 ，具体介绍见[文档](/zh/guide/advanced/lazy-loading.html)
+
+如果你想了解更多关于 browserHistory 和 hashHistory，请参看 [构建和发布](/zh/guide/essentials/deploy.html)。
+:::
+
+其它的配置和 [vue-router](https://router.vuejs.org/zh-cn/) 官方并没有区别，自行查看文档。
 
 ::: warning 注意事项
-
-- 整个项目所有路由 `name` 不能重复
-- 所有的多级路由最终都会转成二级路由，所以不能内嵌子路由
-- 除了 layout 对应的 path 前面需要加 `/`，其余子路由都不要以`/`开头
-
+如果这里有一个需要非常注意的地方就是 `404` 页面一定要最后加载，如果放在 constantRoutes 一同声明了 `404` ，后面的所有页面都会被拦截到`404` ，详细的问题见 [addRoutes when you've got a wildcard route for 404s does not work](https://github.com/vuejs/vue-router/issues/1176)
 :::
 
-**示例**
+<br>
 
-```ts
-import type { AppRouteModule } from '/@/router/types';
-import { getParentLayout, LAYOUT } from '/@/router/constant';
-import { t } from '/@/hooks/web/useI18n';
-const permission: AppRouteModule = {
-  path: '/level',
-  name: 'Level',
-  component: LAYOUT,
-  redirect: '/level/menu1/menu1-1/menu1-1-1',
-  meta: {
-    icon: 'ion:menu-outline',
-    title: t('routes.demo.level.level'),
-  },
+## 侧边栏
 
-  children: [
-    {
-      path: 'tabs/:id', 
-      name: 'TabsParams',
-      component: getParentLayout('TabsParams'),
-      meta: {
-        carryParam: true,
-        hidePathForChildren: true, // 本级path将会在子级菜单中合成完整path时会忽略这一层级
-      },
-      children: [
-        path: 'tabs/id1', // 其上级有标记hidePathForChildren，所以本级在生成菜单时最终的path为  /level/tabs/id1
-        name: 'TabsParams',
-        component: getParentLayout('TabsParams'),
-        meta: {
-          carryParam: true,
-          ignoreRoute: true,  // 本路由仅用于菜单生成，不会在实际的路由表中出现
-        },
-      ]
-    },
-    {
-      path: 'menu1',
-      name: 'Menu1Demo',
-      component: getParentLayout('Menu1Demo'),
-      meta: {
-        title: 'Menu1',
-      },
-      redirect: '/level/menu1/menu1-1/menu1-1-1',
-      children: [
-        {
-          path: 'menu1-1',
-          name: 'Menu11Demo',
-          component: getParentLayout('Menu11Demo'),
-          meta: {
-            title: 'Menu1-1',
-          },
-          redirect: '/level/menu1/menu1-1/menu1-1-1',
-          children: [
-            {
-              path: 'menu1-1-1',
-              name: 'Menu111Demo',
-              component: () => import('/@/views/demo/level/Menu111.vue'),
-              meta: {
-                title: 'Menu111',
-              },
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
+本项目侧边栏主要基于 `element-ui` 的 `el-menu` 改造。
 
-export default permission;
-```
+前面也介绍了，侧边栏是通过读取路由并结合权限判断而动态生成的，而且还需要支持路由无限嵌套，所以这里还使用到了递归组件。
 
-### Meta 配置说明
 
-```ts
-export interface RouteMeta {
-  // 路由title  一般必填
-  title: string;
-  // 动态路由可打开Tab页数
-  dynamicLevel?: number;
-  // 动态路由的实际Path, 即去除路由的动态部分;
-  realPath?: string;
-  // 是否忽略权限，只在权限模式为Role的时候有效
-  ignoreAuth?: boolean;
-  // 可以访问的角色，只在权限模式为Role的时候有效
-  roles?: RoleEnum[];
-  // 是否忽略KeepAlive缓存
-  ignoreKeepAlive?: boolean;
-  // 是否固定标签
-  affix?: boolean;
-  // 图标，也是菜单图标
-  icon?: string;
-  // 内嵌iframe的地址
-  frameSrc?: string;
-  // 指定该路由切换的动画名
-  transitionName?: string;
-  // 隐藏该路由在面包屑上面的显示
-  hideBreadcrumb?: boolean;
-  // 如果该路由会携带参数，且需要在tab页上面显示。则需要设置为true
-  carryParam?: boolean;
-  // 隐藏所有子菜单
-  hideChildrenInMenu?: boolean;
-  // 当前激活的菜单。用于配置详情页时左侧激活的菜单路径
-  currentActiveMenu?: string;
-  // 当前路由不再标签页显示
-  hideTab?: boolean;
-  // 当前路由不再菜单显示
-  hideMenu?: boolean;
-  // 菜单排序，只对第一级有效
-  orderNo?: number;
-  // 忽略路由。用于在ROUTE_MAPPING以及BACK权限模式下，生成对应的菜单而忽略路由。2.5.3以上版本有效
-  ignoreRoute?: boolean;
-  // 是否在子级菜单的完整path中忽略本级path。2.5.3以上版本有效
-  hidePathForChildren?: boolean;
-}
-```
+这里同时也改造了 `element-ui` 默认侧边栏不少的样式，所有的 css 都可以在 `@/styles/sidebar.scss` 中找到，你也可以根据自己的需求进行修改。
 
-### 外部页面嵌套
+**这里需要注意一下**，一般侧边栏有两种形式即：`submenu` 和 直接 `el-menu-item`。 一个是嵌套子菜单，另一个则是直接一个链接.
 
-只需要将 `frameSrc` 设置为需要跳转的地址即可
+在 `Sidebar` 中已经帮你做了判断，当你一个路由下面的 `children` 声明的路由大于>1 个时，自动会变成嵌套的模式。如果子路由正好等于一个就会默认将子路由作为根路由显示在侧边栏中，若不想这样，可以通过设置在根路由中设置`alwaysShow: true`来取消这一特性。如：
 
-```ts
-const IFrame = () => import('/@/views/sys/iframe/FrameBlank.vue');
+```js
+// No submenu, because children.length===1
 {
-  path: 'doc',
-  name: 'Doc',
-  component: IFrame,
-  meta: {
-    frameSrc: 'https://vvbin.cn/doc-next/',
-    title: t('routes.demo.iframe.doc'),
-  },
+  path: '/icon',
+  component: Layout,
+  children: [{
+    path: 'index',
+    component: ()=>import('svg-icons/index'),
+    name: 'icons',
+    meta: { title: 'icons', icon: 'icon' }
+  }]
 },
-```
-
-### 外链
-
-只需要将 `path` 设置为需要跳转的**HTTP 地址**即可
-
-```ts
+// Has submenu, because children.length>=1
 {
-  path: 'https://vvbin.cn/doc-next/',
-  name: 'DocExternal',
-  component: IFrame,
+  path: '/components',
+  component: Layout,
+  name: 'component-demo',
   meta: {
-    title: t('routes.demo.iframe.docExternal'),
-  },
-}
-```
-
-### 动态路由Tab自动关闭功能
-若需要开启该功能，需要在动态路由的`meta`中设置如下两个参数：
-- `dynamicLevel` 最大能打开的Tab标签页数
-- `realPath` 动态路由实际路径(考虑到动态路由有时候可能存在N层的情况, 例：`/:id/:subId/:...`), 为了减少计算开销, 使用配置方式事先规定好路由的实际路径(注意: 该参数若不设置，将无法使用该功能)
-
-```ts
-{
-  path: 'detail/:id',
-  name: 'TabDetail',
-  component: () => import('/@/views/demo/feat/tabs/TabDetail.vue'),
-  meta: {
-    currentActiveMenu: '/feat/tabs',
-    title: t('routes.demo.feat.tabDetail'),
-    hideMenu: true,
-    dynamicLevel: 3,
-    realPath: '/feat/tabs/detail',
-  },
-}
-```
-## 图标
-
-这里的 `icon` 配置，会同步到 **菜单**（icon 的值可以查看[此处](../components/icon.md)）。
-
-## 新增路由
-
-### 如何新增一个路由模块
-
-1. 在 [src/router/routes/modules](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/routes/modules) 内新增一个模块文件。
-
-示例，新增 test.ts 文件
-
-```ts
-import type { AppRouteModule } from '/@/router/types';
-import { LAYOUT } from '/@/router/constant';
-import { t } from '/@/hooks/web/useI18n';
-
-const dashboard: AppRouteModule = {
-  path: '/about',
-  name: 'About',
-  component: LAYOUT,
-  redirect: '/about/index',
-  meta: {
-    icon: 'simple-icons:about-dot-me',
-    title: t('routes.dashboard.about'),
+    title: 'components',
+    icon: 'component'
   },
   children: [
-    {
-      path: 'index',
-      name: 'AboutPage',
-      component: () => import('/@/views/sys/about/index.vue'),
-      meta: {
-        title: t('routes.dashboard.about'),
-        icon: 'simple-icons:about-dot-me',
-      },
-    },
-  ],
-};
-
-export default dashboard;
+    { path: 'tinymce', component: ()=>import('components-demo/tinymce'), name: 'tinymce-demo', meta: { title: 'tinymce' }},
+    { path: 'markdown', component: ()=>import('components-demo/markdown'), name: 'markdown-demo', meta: { title: 'markdown' }},
+  ]
+}
 ```
 
-此时路由已添加完成，不需要手动引入，放在[src/router/routes/modules](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/routes/modules) 内的文件会自动被加载。
-
-### 验证
-
-访问 **ip:端口/about/index** 出现对应组件内容即代表成功
-
-## 路由刷新
-
-项目中采用的是**重定向**方式
-
-### 实现
-
-```ts
-import { useRedo } from '/@/hooks/web/usePage';
-import { defineComponent } from 'vue';
-export default defineComponent({
-  setup() {
-    const redo = useRedo();
-    // 执行刷新
-    redo();
-    return {};
-  },
-});
-```
-
-### Redirect
-
-[src/views/sys/redirect/index.vue](https://github.com/vbenjs/vue-vben-admin/tree/main/src/views/sys/redirect/index.vue)
-
-```ts
-import { defineComponent, unref } from 'vue';
-import { useRouter } from 'vue-router';
-export default defineComponent({
-  name: 'Redirect',
-  setup() {
-    const { currentRoute, replace } = useRouter();
-    const { params, query } = unref(currentRoute);
-    const { path } = params;
-    const _path = Array.isArray(path) ? path.join('/') : path;
-    replace({
-      path: '/' + _path,
-      query,
-    });
-    return {};
-  },
-});
-```
-
-## 页面跳转
-
-页面跳转建议采用项目提供的 `useGo`
-
-### 方式
-
-```ts
-import { useGo } from '/@/hooks/web/usePage';
-import { defineComponent } from 'vue';
-export default defineComponent({
-  setup() {
-    const go = useGo();
-
-    // 执行刷新
-    go();
-    go(PageEnum.Home);
-    return {};
-  },
-});
-```
-
-## 多标签页
-
-标签页使用的是 `keep-alive` 和 `router-view` 实现，实现切换 tab 后还能保存切换之前的状态。
-
-### 如何开启页面缓存
-
-开启缓存有 3 个条件
-
-1. 在 [src/settings/projectSetting.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/settings/projectSetting.ts) 内将`openKeepAlive` 设置为 `true`
-2. 路由设置 `name`，且**不能重复**
-3. 路由对应的组件加上 `name`，与路由设置的 `name` 保持一致
-
-```ts
- {
-   ...,
-    // name
-    name: 'Login',
-    // 对应组件组件的name
-    component: () => import('/@/views/sys/login/index.vue'),
-    ...
-  },
-
-  // /@/views/sys/login/index.vue
-  export default defineComponent({
-    // 需要和路由的name一致
-    name:"Login"
-  });
-```
-
-:::warning 注意
-
-keep-alive 生效的前提是：需要将路由的 `name` 属性及对应的页面的 `name` 设置成一样。因为：
-
-**include - 字符串或正则表达式，只有名称匹配的组件会被缓存**
+::: tip unique-opened
+你可以在[Sidebar/index.vue](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)中设置`unique-opened`来控制侧边栏，是否只保持一个子菜单的展开。
 :::
 
-### 如何让某个页面不缓存
+## 多级目录(嵌套路由)
 
-**可在 router.meta 下配置**
+如果你的路由是多级目录，如本项目 [@/views/nested](https://github.com/PanJiaChen/vue-element-admin/tree/master/src/views/nested) 那样， 有三级路由嵌套的情况下，**不要忘记还要手动在二级目录的根文件下添加一个 `<router-view>`**。
 
-可以将 `ignoreKeepAlive` 配置成 `true` 即可关闭缓存。
+```html
+ <!-- 父级路由组件  -->
+<template>
+  <div>
+    <!-- xxx html 内容  -->
+    <router-view />
+  </div>
+</template>
+```
 
-```ts
-export interface RouteMeta {
-  // 是否忽略KeepAlive缓存
-  ignoreKeepAlive?: boolean;
+如：[@/views/nested/menu1/index.vue](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/views/nested/menu1/index.vue)，原则上有多少级路由嵌套就需要多少个`<router-view>`。
+
+![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/9459de62-64d0-4819-9730-daf3f9889018.png)
+
+<br/>
+
+## 点击侧边栏 刷新当前路由
+
+在用 spa(单页面应用) 这种开发模式之前，用户每次点击侧边栏都会重新请求这个页面，用户渐渐养成了点击侧边栏当前路由来刷新 view 的习惯。但现在 spa 就不一样了，用户点击当前高亮的路由并不会刷新 view，因为 vue-router 会拦截你的路由，它判断你的 url 并没有任何变化，所以它不会触发任何钩子或者是 view 的变化。[issue](https://github.com/vuejs/vue-router/issues/296) 地址，社区也对该问题展开了激烈讨论。
+
+![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/5d0b0391-ea6a-45f2-943e-aff5dbe74d12.png)
+
+尤大本来也说要增加一个方法来强刷 view，但后来他又改变了心意/(ㄒ o ㄒ)/~~。但需求就摆在这里，我们该怎么办呢？他说了不改变 current URL 就不会触发任何东西，那我可不可以强行触发你的 hook 呢？上有政策， 下有对策我们变着花来 hack。方法也很简单，通过不断改变 url 的 query 来触发 view 的变化。我们监听侧边栏每个 link 的 click 事件，每次点击都给 router push 一个不一样的 query 来确保会重新刷新 view。
+
+```js
+clickLink(path) {
+  this.$router.push({
+    path,
+    query: {
+      t: +new Date() //保证每次点击路由的query项都是不一样的，确保会重新刷新view
+    }
+  })
 }
 ```
 
-## 如何更改首页路由
+ps:不要忘了在 `router-view` 加上一个特定唯一的 `key`，如 `<router-view :key="$route.path"></router-view>`，
+但这也有一个弊端就是 url 后面有一个很难看的 `query` 后缀如 `xxx.com/article/list?t=1496832345025`
 
-首页路由指的是应用程序中的默认路由，当不输入其他任何路由时，会自动重定向到该路由下，并且该路由在Tab上是固定的，即使设置`affix: false`也不允许关闭
+你可以从前面的 issue 中知道还有很多其它方案。我本人在公司项目中，现在采取的方案是判断当前点击的菜单路由和当前的路由是否一致，若一致的时候，会先跳转到一个专门 Redirect 的页面，它会将路由重定向到我想去的页面，这样就起到了刷新的效果了。
 
-例：首页路由配置的是`/dashboard/analysis`，那么当直接访问 `http://localhost:3100/` 会自动跳转到`http://localhost:3100/#/dashboard/analysis` 上(用户已登录的情况下)
+**相关例子**
 
+![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/0dd7f78b-0fb5-4c7d-8236-cee78f960984.jpg)
 
-可以将`pageEnum.ts`中的`BASE_HOME`更改为需要你想设置的首页即可
-```ts
-export enum PageEnum {
-    // basic home path
-    // 更改此处即可
-    BASE_HOME = '/dashboard',
-}
+点击图片所示的全局 size 大小切换按钮，你会发现 页面 `app-main`区域进行了刷新。它就是运用了重定向到 `Redirect`页面之后再重定向回原始页面的方法。
 
+点击的时候重定向页面至 `/redirect`
+
+```js
+const { fullPath } = this.$route
+this.$router.replace({
+  path: '/redirect' + fullPath
+})
 ```
+
+`redirect` 页面在重定向回原始页面
+
+```js
+// redirect.vue
+// https://github.com/PanJiaChen/vue-element-admin/blob/master/src/views/redirect/index.vue
+export default {
+  beforeCreate() {
+    const { params, query } = this.$route
+    const { path } = params
+    this.$router.replace({ path: '/' + path, query })
+  },
+  render: function(h) {
+    return h() // avoid warning message
+  }
+}
+```
+
+<br>
+
+## 面包屑
+
+本项目中也封装了一个面包屑导航，它也是通过 `watch $route` 变化动态生成的。它和 menu 也一样，也可以通过之前那些配置项控制一些路由在面包屑中的展现。大家也可以结合自己的业务需求增改这些自定义属性。比如可以在路由中声明`breadcrumb:false`，让其不在 breadcrumb 面包屑显示。
+
+![](https://panjiachen.gitee.io/gitee-cdn/vue-element-admin-site/4c60b3fc-febd-4e22-9150-724dcbd25a8e.gif)
+
+::: tip 代码地址
+[@/components/Breadcrumb](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/components/Breadcrumb/index.vue)
+:::
+
+## 侧边栏滚动问题
+
+之前版本的滚动都是用 css 来做处理的
+
+```css
+overflow-y: scroll;
+
+::-webkit-scrollbar {
+  display: none;
+}
+```
+
+首先这样写会有兼容性问题，在火狐或者其它低版本浏览器中都会比较不美观。其次在侧边栏收起的情况下，受限于 `element-ui`的 `menu` 组件的实现方式，不能使用该方式来处理。
+
+所以现版本中使用了 `el-scrollbar` 来处理侧边栏滚动问题。
+
+::: tip 代码地址
+[@/layout/components/Sidebar](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)
+:::
+
+## 侧边栏 外链 <Badge text="v3.8.2+"/>
+
+你也可以在侧边栏中配置一个外链，只要你在 `path` 中填写了合法的 url 路径，当你点击侧边栏的时候就会帮你新开这个页面。
+
+例如：
+
+```json
+{
+  "path": "external-link",
+  "component": Layout,
+  "children": [
+    {
+      "path": "https://github.com/PanJiaChen/vue-element-admin",
+      "meta": { "title": "externalLink", "icon": "link" }
+    }
+  ]
+}
+```
+
+## 侧边栏默认展开
+
+某些场景下，用户需要默认展开侧边栏的某些`sub-menu`，如下图：
+
+<img :src="$withBase('/images/default-openeds.jpg')" alt="default-openeds.jpg" width="250px">
+
+可以通过`default-openeds`来进行设置，首先找到 [侧边栏代码](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/layout/components/Sidebar/index.vue)
+
+```html
+ <el-menu
+        :default-openeds="['/example','/nested']" // 添加本行代码
+        :default-active="activeMenu"
+        :collapse="isCollapse"
+        :background-color="variables.menuBg"
+        :text-color="variables.menuText"
+        :unique-opened="false"
+        :active-text-color="variables.menuActiveText"
+        :collapse-transition="false"
+        mode="vertical"
+      >
+        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" />
+      </el-menu>
+```
+
+**注意 :default-openeds="['/example','/nested']" 里面填写的是 submenu 的 route-path**

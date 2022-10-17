@@ -296,6 +296,10 @@ function createSidebar() {
             link: '/guide/settings'
           },
           {
+            text: '登录&注册配置',
+            link: '/guide/component'
+          },
+          {
             text: '路由',
             link: '/guide/router'
           },
@@ -310,10 +314,6 @@ function createSidebar() {
           {
             text: 'Mock&联调',
             link: '/guide/mock'
-          },
-          {
-            text: '组件注册',
-            link: '/guide/component'
           },
           {
             text: '样式',
