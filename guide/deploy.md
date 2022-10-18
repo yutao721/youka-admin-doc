@@ -1,276 +1,146 @@
-# 构建&部署
-
-::: tip 前言
-
-由于是展示项目，所以打包后相对较大，如果项目中没有用到的插件，可以删除对应的文件或者路由，不引用即可，没有引用就不会打包。
-
-当然，你也可以使用精简版 [vue-vben-admin-thin](https://github.com/vbenjs/vben-admin-thin-next) 进行开发。
-
-:::
+# 构建和发布
 
 ## 构建
 
-项目开发完成之后，执行以下命令进行构建
+当项目开发完毕，只需要运行一行命令就可以打包你的应用：
 
 ```bash
-yarn build
+# 打包正式环境
+npm run build:prod
+
+# 打包预发布环境
+npm run build:stage
 ```
 
-构建打包成功之后，会在根目录生成 dist 文件夹，里面就是构建打包好的文件
+构建打包成功之后，会在根目录生成 `dist` 文件夹，里面就是构建打包好的文件，通常是 `***.js` 、`***.css`、`index.html` 等静态文件。
 
-### 旧版浏览器兼容
+如果需要自定义构建，比如指定 `dist` 目录等，则需要通过 vue.config.js的 `outputDir` 进行配置。
 
-在 **.env.production** 内
 
-设置 `VITE_LEGACY=true` 即可打包出兼容旧版浏览器的代码
 
-```bash
-VITE_LEGACY = true
+## 环境变量
+
+所有测试环境或者正式环境变量的配置都在 .env.development 等 `.env.xxxx`文件中。
+
+它们都会通过 `webpack.DefinePlugin` 插件注入到全局。
+
+::: tip 注意！！！
+环境变量必须以`VUE_APP_`为开头。如:`VUE_APP_API`、`VUE_APP_TITLE`
+
+你在代码中可以通过如下方式获取:
+
+```js
+console.log(process.env.VUE_APP_xxxx)
 ```
-
-### 预览
-
-发布之前可以在本地进行预览，有多种方式，这里介绍两种
-
-**不能直接打开构建后的 html 文件**
-
-- 使用项目自定的命令进行预览(推荐)
-
-```bash
-# 先打包在进行预览
-yarn preview
-# 直接预览本地 dist 文件目录
-yarn preview:dist
-```
-
-- 本地服务器预览(通过 live-server)
-
-```bash
-# 1.全局安装live-server
-yarn global add live-server
-# 2. 进入打包的后目录
-cd ./dist
-# 本地预览，默认端口8080
-live-server
-# 指定端口
-live-server --port 9000
-```
-
-### 分析构建文件体积
-
-如果你的构建文件很大，可以通过项目内置 [rollup-plugin-analyzer](https://github.com/doesdev/rollup-plugin-analyzer) 插件进行代码体积分析，从而优化你的代码。
-
-```bash
-yarn report
-
-```
-
-运行之后，在自动打开的页面可以看到具体的体积分布，以分析哪些依赖有问题。
-
-::: tip
-
-左上角可以切换 显示 gzip 或者 brotli
 
 :::
 
-![](/images/report.png)
 
-## 压缩
+## 分析构建文件体积
 
-### 开启 gzip 压缩
-
-开启 gzip，并配合 nginx 的 `gzip_static` 功能可以大大加快页面访问速度
-
-::: tip
-
-只需开启 `VITE_BUILD_COMPRESS='gzip'` 即可在打包的同时生成 .gz 文件
-
-:::
+如果你的构建文件很大，你可以通过 `webpack-bundle-analyzer` 命令构建并分析依赖模块的体积分布，从而优化你的代码。
 
 ```bash
-# 根据自己路径来配置更改
-# 例如部署在nginx /next/路径下  则VITE_PUBLIC_PATH=/next/
-VITE_PUBLIC_PATH=/
+npm run preview -- --report
 ```
 
-### 开启 brotli 压缩
+## 发布
 
-brotli 是比 gzip 压缩率更高的算法，可以与 gzip 共存不会冲突，需要 nginx 安装指定模块并开启即可。
+对于发布来讲，只需要将最终生成的静态文件，也就是通常情况下 `dist` 文件夹的静态文件发布到你的 cdn 或者静态服务器即可，需要注意的是其中的 `index.html` 通常会是你后台服务的入口页面，在确定了 js 和 css 的静态之后可能需要改变页面的引入路径。
 
 ::: tip
-
-只需开启 `VITE_BUILD_COMPRESS='brotli'` 即可在打包的同时生成 .br 文件
-
+部署时可能会发现资源路径不对 ,只需修改 `vue.config.js` 文件资源路径即可。
 :::
 
-```bash
-# 根据自己路径来配置更改
-# 例如部署在nginx /next/路径下  则VITE_PUBLIC_PATH=/next/
-VITE_PUBLIC_PATH=/
+```js
+publicPath: './' //请根据自己路径来配置更改
 ```
 
-### 同时开启 gzip 与 brotli
+有些特殊情况需要部署到子路径下，例如：`https://www.baidu.com/admin`，可以按照下面流程修改。
 
-只需开启 `VITE_BUILD_COMPRESS='brotli,gzip'` 即可在打包的同时生成 `.gz` 和 `.br` 文件。
+1、修改`vue.config.js`中的`publicPath`属性
 
-### gzip 与 brotli 在 nginx 内的配置
+```js
+publicPath: process.env.NODE_ENV === "production" ? "/admin/" : "/admin/",
+```
 
-```bash
-http {
-  # 开启gzip
-  gzip on;
-  # 开启gzip_static
-  # gzip_static 开启后可能会报错，需要安装相应的模块, 具体安装方式可以自行查询
-  # 只有这个开启，vue文件打包的.gz文件才会有效果，否则不需要开启gzip进行打包
-  gzip_static on;
-  gzip_proxied any;
-  gzip_min_length 1k;
-  gzip_buffers 4 16k;
-  #如果nginx中使用了多层代理 必须设置这个才可以开启gzip。
-  gzip_http_version 1.0;
-  gzip_comp_level 2;
-  gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
-  gzip_vary off;
-  gzip_disable "MSIE [1-6]\.";
+2、修改`router/index.js`，添加一行`base`属性
 
-  # 开启 brotli压缩
-  # 需要安装对应的nginx模块,具体安装方式可以自行查询
-  # 可以与gzip共存不会冲突
-  brotli on;
-  brotli_comp_level 6;
-  brotli_buffers 16 8k;
-  brotli_min_length 20;
-  brotli_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml;
+```js
+export default new Router({
+  base: "/admin",
+  mode: 'history', // 去掉url中的#
+  scrollBehavior: () => ({ y: 0 }),
+  routes: constantRoutes
+})
+```
+
+3、`/index`路由添加获取子路径`/admin`
+
+修改`layout/components/Navbar.vue`中的`location.href`
+
+```js
+location.href = '/admin/index';
+```
+
+修改`utils/request.js`中的`location.href`
+
+```js
+location.href = '/admin/index';
+```
+
+4、修改`nginx`配置,服务端处理
+
+```text
+location /admin {
+	try_files $uri $uri/ /admin/index.html;
+	index  index.html index.htm;
 }
 ```
 
-## 部署
+打开浏览器，输入：`https://www.baidu.com/admin` 能正常访问和刷新表示成功。
 
-::: danger 注意
+## 前端路由与服务端的结合
 
-项目默认是在生产环境开启 Mock，这样做非常不好，只是为了演示环境有数据，不建议在生产环境使用 Mock，而应该使用真实的后台接口，并将 Mock 关闭。
+前端路由使用的是 `vue-router`，所以你可以选择两种方式：`browserHistory` 和 `hashHistory`。
 
-:::
+两者的区别简单来说是对路由方式的处理不一样，`hashHistory` 是以 `#` 后面的路径进行处理，通过 [HTML 5 History](https://developer.mozilla.org/en-US/docs/Web/API/History_API) 进行前端路由管理，而 `browserHistory` 则是类似我们通常的页面访问路径，并没有 `#`，但要通过服务端的配置，能够访问指定的 url 都定向到当前页面，从而能够进行前端的路由管理。
 
-### 发布
+本项目默认使用的是 `hashHistory` ，所以如果你的 url 里有 `#`，想去掉的话，需要切换为 `browserHistory`。
+修改 `src/router/index.js` 中的 mode 即可
 
-简单的部署只需要将最终生成的静态文件，dist 文件夹的静态文件发布到你的 cdn 或者静态服务器即可，需要注意的是其中的 index.html 通常会是你后台服务的入口页面，在确定了 js 和 css 的静态之后可能需要改变页面的引入路径。
+```js
+export default new Router({
+  // mode: 'history', //后端支持可开
+})
+```
 
-例如上传到 nginx
+如果你使用的是静态站点，那么使用 `browserHistory` 可能会无法访问你的应用，因为假设你访问 `http://localhost:9527/dashboard`，那么其实你的静态服务器并没有能够映射的文件，而使用 `hashHistory` 则不会有这个问题，因为它的页面路径是以 `#` 开始的，所有访问都在前端完成，如：`http://localhost:9527/#/dashboard/`。
 
-`/srv/www/project/index.html`
+如果我们推荐采用 `browserHistory`，只需要在服务端做一个映射，比如：
+
+Apache
 
 ```bash
-# nginx配置
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+```
+
+nginx
+
+```bash
 location / {
-  # 不缓存html，防止程序更新后缓存继续生效
-  if ($request_filename ~* .*\.(?:htm|html)$) {
-    add_header Cache-Control "private, no-store, no-cache, must-revalidate, proxy-revalidate";
-    access_log on;
-  }
-  # 这里是vue打包文件dist内的文件的存放路径
-  root   /srv/www/project/;
-  index  index.html index.htm;
-}
-
-```
-
-**部署时可能会发现资源路径不对，只需要修改`.env.production`文件即可。**
-
-```bash
-# 根据自己路径来配置更改
-# 注意需要以 / 开头和结尾
-VITE_PUBLIC_PATH=/
-VITE_PUBLIC_PATH=/xxx/
-```
-
-### 前端路由与服务端的结合
-
-项目前端路由使用的是 vue-router，所以你可以选择两种方式：history 和 hash。
-
-- **hash** 默认会在 url 后面拼接`#`
-- **history** 则不会，不过 `history` 需要服务器配合
-
-可在 [src/router/index.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/index.ts) 内进行 mode 修改
-
-```ts
-import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router';
-
-createRouter({
-  history: createWebHashHistory(),
-  // or
-  history: createWebHistory(),
-});
-```
-
-### history 路由模式下服务端配置
-
-开启 history 模式需要服务器配置，更多的服务器配置详情可以看 [history-mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#html5-mode)
-
-这里以 nginx 配置为例
-
-**部署到根目录**
-
-```bash
-server {
-  listen 80;
-  location / {
-    # 用于配合 History 使用
-    try_files $uri $uri/ /index.html;
-  }
+  try_files $uri $uri/ /index.html;
 }
 ```
 
-**部署到非根目录**
+::: tip
+更多配置请查看 [vue-router 文档](https://router.vuejs.org/zh-cn/essentials/history-mode.html)
+:::
 
-1. 首先需要在打包的时候更改配置
-
-```bash
-# 在.env.production内，配置子目录路径
-VITE_PUBLIC_PATH = /sub/
-```
-
-```bash
-server {
-    listen       80;
-    server_name  localhost;
-    location /sub/ {
-      # 这里是vue打包文件dist内的文件的存放路径
-      alias   /srv/www/project/;
-      index index.html index.htm;
-      try_files $uri $uri/ /sub/index.html;
-    }
-}
-```
-
-### 使用 nginx 处理跨域
-
-使用 nginx 处理项目部署后的跨域问题
-
-1. 配置前端项目接口地址
-
-```bash
-# 在.env.production内，配置接口地址
-VITE_GLOB_API_URL=/api
-```
-
-2. 在 nginx 配置请求转发到后台
-
-```bash
-server {
-  listen       8080;
-  server_name  localhost;
-  # 接口代理，用于解决跨域问题
-  location /api {
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    # 后台接口地址
-    proxy_pass http://110.110.1.1:8080/api;
-    proxy_redirect default;
-    add_header Access-Control-Allow-Origin *;
-    add_header Access-Control-Allow-Headers X-Requested-With;
-    add_header Access-Control-Allow-Methods GET,POST,OPTIONS;
-  }
-}
-```

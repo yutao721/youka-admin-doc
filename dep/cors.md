@@ -26,11 +26,11 @@
 
 本地开发一般使用下面 3 种方式进行处理
 
-1. vite 的 proxy 进行代理
+1. vue-cli 的 proxy 进行代理, 详细可以查看文档，https://cli.vuejs.org/config/#devserver-proxy
 2. 后台开启 cors
 3. 使用 nginx 转发请求
 
-项目内部自带第一种方式，具体可以参考[服务端交互-本地开发环境接口地址修改](../guide/mock.md#配置)
+
 
 **生产环境跨域**
 

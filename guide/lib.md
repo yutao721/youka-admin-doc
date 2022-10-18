@@ -1,44 +1,62 @@
 # 引入外部模块
 
-除了自带组件以外，有时我们还需要引入其他外部模块。我们以 `ant-design-vue` 为例：
+除了自带组件以外，有时我们还需要引入其他外部模块。我们以 `vue-count-to` 为例：
 
 ## 安装
 
-安装 `ant-design-vue`
+安装 `vue-count-to`
 
 ```bash
 # 在终端输入下面的命令完成安装
-yarn add ant-design-vue
+yarn add vue-count-to
 ```
 
 ## 使用
 
 ### 全局使用
-
-```ts
-import { createApp } from 'vue';
-import App from './App.vue';
-import Antd from 'ant-design-vue';
-const app = createApp(App);
-app.use(Antd);
-app.mount('#app');
+在main.js中注册全局组件
+```js
+import countTo from 'vue-count-to'
+Vue.component('countTo', countTo)
 ```
 
 ### 局部使用
 
 ```vue
 <template>
-  <Button>text</Button>
+ <div>
+  <count-to
+       ref="example"
+       :start-val="_startVal"
+       :end-val="_endVal"
+       :duration="_duration"
+       :decimals="_decimals"
+       :separator="_separator"
+       :prefix="_prefix"
+       :suffix="_suffix"
+       :autoplay="false"
+       class="example"
+     />
+</div>
 </template>
 
 <script>
-  import { defineComponent } from 'vue';
-  import { Button } from 'ant-design-vue';
-  export default defineComponent({
-    components: {
-      Button,
+  import countTo from 'vue-count-to'
+  export default {
+    name: 'CountToDemo',
+    components: { countTo },
+    data() {
+      return {
+        setStartVal: 0,
+        setEndVal: 2017,
+        setDuration: 4000,
+        setDecimals: 0,
+        setSeparator: ',',
+        setSuffix: ' rmb',
+        setPrefix: '¥ '
+      }
     },
-  });
+  }
 </script>
 ```
 

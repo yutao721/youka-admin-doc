@@ -322,15 +322,11 @@ function createSidebar() {
           {
             text: '构建&部署',
             link: '/guide/deploy'
-          },
-          {
-            text: 'Electron',
-            link: '/guide/electron'
           }
         ]
       },
       {
-        text: '深入',
+        text: '进阶',
         children: [
           {
             text: '跨域处理',
@@ -339,18 +335,6 @@ function createSidebar() {
           {
             text: '图标',
             link: '/dep/icon'
-          },
-          {
-            text: '国际化',
-            link: '/dep/i18n'
-          },
-          {
-            text: '项目规范',
-            link: '/dep/lint'
-          },
-          {
-            text: '黑暗主题',
-            link: '/dep/dark'
           }
         ]
       },
@@ -364,14 +348,6 @@ function createSidebar() {
           {
             text: '常见疑点',
             link: '/other/doubt'
-          },
-          {
-            text: '测试服务',
-            link: '/other/server'
-          },
-          {
-            text: '相关项目',
-            link: '/other/project'
           }
         ]
       }

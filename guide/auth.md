@@ -1,366 +1,387 @@
 # 权限
 
-项目中集成了三种权限处理方式：
+## 为什么要有权限
 
-1. 通过用户角色来过滤菜单(前端方式控制)，菜单和路由分开配置
-2. 通过用户角色来过滤菜单(前端方式控制)，菜单由路由配置自动生成
-3. 通过后台来动态生成路由表(后台方式控制)
+做后台项目区别于做其它的项目，权限验证与安全性是非常重要的，可以说是一个后台项目一开始就必须考虑和搭建的基础核心功能。我们所要做到的是：不同的权限对应着不同的路由，同时侧边栏也需根据不同的权限，异步生成。例如：一个后台使用者不同，看到的菜单（也就是侧边栏）也有所不同，运营端可以看到关键数据板块，而其他角色看不到此菜单，如此就必须给不同的角色分配不同的权限，而不同的权限则有不同的路由菜单，就形成了不同权限的角色有着不同的页面组成。
 
-## 前端角色权限
+## 权限分类
 
-**实现原理:** 在前端固定写死路由的权限，指定路由有哪些权限可以查看。只初始化通用的路由，需要权限才能访问的路由没有被加入路由表内。在登陆后或者其他方式获取用户角色后，通过角色去遍历路由表，获取该角色可以访问的路由表，生成路由表，再通过 `router.addRoutes` 添加到路由实例，实现权限的过滤。
+按展示级别显示可以分为：
 
-**缺点:** 权限相对不自由，如果后台改动角色，前台也需要跟着改动。适合角色较固定的系统
+- 页面级别  可控制页面是否显示
+- 按钮级别  可控制某个按钮或者模块是否显示
 
-### 实现
+按实现方式可以分为：
 
-1. 在[项目配置](./settings.md#项目配置)将系统内权限模式改为 `ROLE` 模式
+- 角色权限 
+- 权限标识符
 
-```ts
-// ! 改动后需要清空浏览器缓存
-const setting: ProjectConfig = {
-  // 权限模式
-  permissionMode: PermissionModeEnum.ROLE,
-};
-```
+角色一般来说是由一系列的菜单权限所组成，可以自由组合，页面以及页面功能按钮都依次为准。
 
-2. 在路由表配置路由所需的权限，如果不配置，默认可见(见注释)
+![](http://ycmall-oss.oss-cn-hangzhou.aliyuncs.com/common-static/youka-admin/auth_1.png)
 
-```ts
-import type { AppRouteModule } from '/@/router/types';
+从上图可以看到，common这个角色拥有后台所配置菜单所有的页面权限以及页面对应的按钮权限，唯独没有用户管理页面中重置密码的按钮权限，如果给分配到common这个角色，那此角色就看不到重置密码的按钮，这也说明了可以用角色来控制按钮功能的显示与否，当然角色也可以控制页面路由的显示，如果上图用户管理整一块都不选中，则路由菜单（侧边栏）就不会显示该页面。
 
-import { getParentLayout, LAYOUT } from '/@/router/constant';
-import { RoleEnum } from '/@/enums/roleEnum';
-import { t } from '/@/hooks/web/useI18n';
+对于前端配置的动态路由，也可以用`roles`字段来控制某个或者某些路由只有特定的角色能访问。
 
-const permission: AppRouteModule = {
-  path: '/permission',
-  name: 'Permission',
-  component: LAYOUT,
-  redirect: '/permission/front/page',
-  meta: {
-    icon: 'ion:key-outline',
-    title: t('routes.demo.permission.permission'),
-  },
-
-  children: [
-    {
-      path: 'front',
-      name: 'PermissionFrontDemo',
-      component: getParentLayout('PermissionFrontDemo'),
-      meta: {
-        title: t('routes.demo.permission.front'),
-      },
-      children: [
-        {
-          path: 'auth-pageA',
-          name: 'FrontAuthPageA',
-          component: () => import('/@/views/demo/permission/front/AuthPageA.vue'),
-          meta: {
-            title: t('routes.demo.permission.frontTestA'),
-            roles: [RoleEnum.SUPER],
-          },
-        },
-        {
-          path: 'auth-pageB',
-          name: 'FrontAuthPageB',
-          component: () => import('/@/views/demo/permission/front/AuthPageB.vue'),
-          meta: {
-            title: t('routes.demo.permission.frontTestB'),
-            roles: [RoleEnum.TEST],
-          },
-        },
-      ],
-    },
-  ],
-};
-
-export default permission;
-```
-
-3. 在路由钩子内动态判断
-
-详细代码见 [src/router/guard/permissionGuard.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/router/guard/permissionGuard.ts)
-
-```ts
-// 这里只列举了主要代码
-const routes = await permissionStore.buildRoutesAction();
-
-routes.forEach((route) => {
-  router.addRoute(route as unknown as RouteRecordRaw);
-});
-
-const redirectPath = (from.query.redirect || to.path) as string;
-const redirect = decodeURIComponent(redirectPath);
-const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect };
-permissionStore.setDynamicAddedRoute(true);
-next(nextData);
-```
-
-**permissionStore.buildRoutesAction** 用于**过滤动态路由**，详细代码见 [src/store/modules/permission.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/store/modules/permission.ts)
-
-```ts
-// 主要代码
-if (permissionMode === PermissionModeEnum.ROLE) {
-  const routeFilter = (route: AppRouteRecordRaw) => {
-    const { meta } = route;
-    const { roles } = meta || {};
-    if (!roles) return true;
-    return roleList.some((role) => roles.includes(role));
-  };
-  routes = filter(asyncRoutes, routeFilter);
-  routes = routes.filter(routeFilter);
-  // Convert multi-level routing to level 2 routing
-  routes = flatMultiLevelRoutes(routes);
-}
-```
-
-### 动态更换角色
-
-系统提供 [usePermission](https://github.com/vbenjs/vue-vben-admin/tree/main/src/hooks/web/usePermission.ts) 方便角色相关操作
-
-```ts
-import { usePermission } from '/@/hooks/web/usePermission';
-import { RoleEnum } from '/@/enums/roleEnum';
-
-export default defineComponent({
-  setup() {
-    const { changeRole } = usePermission();
-    // 更换为test角色
-    // 动态更改角色，传入角色名称，可以是数组
-    changeRole(RoleEnum.TEST);
-    return {};
-  },
-});
-```
-
-### 细粒度权限
-
-**函数方式**
-
-[usePermission](https://github.com/vbenjs/vue-vben-admin/tree/main/src/hooks/web/usePermission.ts) 还提供了按钮级别的权限控制。
-
-```vue
-<template>
-  <a-button v-if="hasPermission([RoleEnum.TEST, RoleEnum.SUPER])" color="error" class="mx-4">
-    拥有[test,super]角色权限可见
-  </a-button>
-</template>
-<script lang="ts">
-  import { usePermission } from '/@/hooks/web/usePermission';
-  import { RoleEnum } from '/@/enums/roleEnum';
-
-  export default defineComponent({
-    setup() {
-      const { hasPermission } = usePermission();
-
-      return { hasPermission };
-    },
-  });
-</script>
-```
-
-**组件方式**
-
-具体查看[权限组件使用](../components/auth.md)
-
-**指令方式**
-
-::: tip
-
-指令方式不能动态更改权限
-
-:::
-
-```html
-<a-button v-auth="RoleEnum.SUPER" type="primary" class="mx-4"> 拥有super角色权限可见</a-button>
-```
-
-## 后台动态获取
-
-**实现原理:** 是通过接口动态生成路由表，且遵循一定的数据结构返回。前端根据需要处理该数据为可识别的结构，再通过 `router.addRoutes` 添加到路由实例，实现权限的动态生成。
-
-### 实现
-
-1.  在[项目配置](./settings.md#项目配置)将系统内权限模式改为 `BACK` 模式
-
-```ts
-// ! 改动后需要清空浏览器缓存
-const setting: ProjectConfig = {
-  // 权限模式
-  permissionMode: PermissionModeEnum.BACK,
-};
-```
-
-2. 路由拦截，与角色权限模式一致
-
-**permissionStore.buildRoutesAction** 用于**过滤动态路由**，详细代码见 [/@/store/modules/permission.ts](https://github.com/vbenjs/vue-vben-admin/tree/main/src/store/modules/permission.ts)
-
-```ts
-// 主要代码
-if (permissionMode === PermissionModeEnum.BACK) {
-  const { createMessage } = useMessage();
-
-  createMessage.loading({
-    content: t('sys.app.menuLoading'),
-    duration: 1,
-  });
-
-  // !Simulate to obtain permission codes from the background,
-  // this function may only need to be executed once, and the actual project can be put at the right time by itself
-  let routeList: AppRouteRecordRaw[] = [];
-  try {
-    this.changePermissionCode();
-    routeList = (await getMenuList()) as AppRouteRecordRaw[];
-  } catch (error) {
-    console.error(error);
-  }
-
-  // Dynamically introduce components
-  routeList = transformObjToRoute(routeList);
-
-  //  Background routing to menu structure
-  const backMenuList = transformRouteToMenu(routeList);
-  this.setBackMenuList(backMenuList);
-
-  routeList = flatMultiLevelRoutes(routeList);
-  routes = [PAGE_NOT_FOUND_ROUTE, ...routeList];
-}
-```
-
-**getMenuList 返回值格式**
-
-返回值由多个路由模块组成
-
-::: warning 注意
-
-后端接口返回的数据中必须包含`PageEnum.BASE_HOME`指定的路由（path定义于`src/enums/pageEnum.ts`）
-
-:::
-
-```ts
-[
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: '/dashboard/welcome/index',
-    meta: {
-      title: 'routes.dashboard.welcome',
-      affix: true,
-      icon: 'ant-design:home-outlined',
-    },
-  },
-  {
-    path: '/permission',
-    name: 'Permission',
-    component: 'LAYOUT',
-    redirect: '/permission/front/page',
-    meta: {
-      icon: 'carbon:user-role',
-      title: 'routes.demo.permission.permission',
-    },
+```js
+{
+    path: '/system/user-auth',
+    component: Layout,
+    hidden: true,
+    roles: ['common'],
     children: [
       {
-        path: 'back',
-        name: 'PermissionBackDemo',
-        meta: {
-          title: 'routes.demo.permission.back',
-        },
+        path: 'role/:userId(\\d+)',
+        component: () => import('@/views/system/user/authRole'),
+        name: 'AuthRole',
+        meta: { title: '分配角色', activeMenu: '/system/user' }
+      }
+    ]
+  }
+```
 
-        children: [
-          {
-            path: 'page',
-            name: 'BackAuthPage',
-            component: '/demo/permission/back/index',
-            meta: {
-              title: 'routes.demo.permission.backPage',
-            },
-          },
-          {
-            path: 'btn',
-            name: 'BackAuthBtn',
-            component: '/demo/permission/back/Btn',
-            meta: {
-              title: 'routes.demo.permission.backBtn',
-            },
-          },
-        ],
-      },
-    ],
+当然，也可以通过菜单权限比如`permissions: ['system:user:edit']`来控制路由的访问。
+
+```js
+{
+    path: '/system/user-auth',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:user:edit'],
+    children: [
+      {
+        path: 'role/:userId(\\d+)',
+        component: () => import('@/views/system/user/authRole'),
+        name: 'AuthRole',
+        meta: { title: '分配角色', activeMenu: '/system/user' }
+      }
+    ]
+  }
+```
+
+上面这个路由配置就代表，只要有`system:user:edit`菜单权限就能访问，如果很多角色中都有这个菜单权限，那么这些角色就都能访问该路由。
+
+上面说的角色权限和菜单权限都是基于后台的菜单管理中添加的，然后根据菜单来生成的一份动态路由表。
+
+![](http://ycmall-oss.oss-cn-hangzhou.aliyuncs.com/common-static/youka-admin/auth_2.png)
+
+添加目录如下图：
+
+![](http://ycmall-oss.oss-cn-hangzhou.aliyuncs.com/common-static/youka-admin/auth_3.png)
+
+添加菜单如下图：
+
+![](http://ycmall-oss.oss-cn-hangzhou.aliyuncs.com/common-static/youka-admin/auth_4.png)
+
+添加按钮如下图：
+
+![](http://ycmall-oss.oss-cn-hangzhou.aliyuncs.com/common-static/youka-admin/auth_5.png)
+
+
+
+## 权限实现
+
+不同的权限对应着不同的路由，同时侧边栏也需根据不同的权限，这个是权限控制的第一个需求，首先看下`src/router/index`中路由表的生成。
+
+```js
+// 公共路由
+export const constantRoutes = [
+  {
+    path: '/redirect',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/redirect/:path(.*)',
+        component: () => import('@/views/redirect')
+      }
+    ]
   },
-];
-```
-
-### 动态更换菜单
-
-系统提供 [usePermission](https://github.com/vbenjs/vue-vben-admin/tree/main/src/hooks/web/usePermission.ts) 方便角色相关操作
-
-```ts
-import { usePermission } from '/@/hooks/web/usePermission';
-import { RoleEnum } from '/@/enums/roleEnum';
-
-export default defineComponent({
-  setup() {
-    const { changeMenu } = usePermission();
-
-    // 更改菜单的实现需要自行去修改
-    changeMenu();
-    return {};
+  {
+    path: '/login',
+    component: () => import('@/views/login/index.vue'),
+    hidden: true
   },
-});
+  {
+    path: '/register',
+    component: () => import('@/views/register'),
+    hidden: true
+  },
+  {
+    path: '/404',
+    component: () => import('@/views/error/404'),
+    hidden: true
+  },
+  {
+    path: '/401',
+    component: () => import('@/views/error/401'),
+    hidden: true
+  },
+  {
+    path: '',
+    component: Layout,
+    redirect: 'index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/index'),
+        name: 'Index',
+        meta: { title: '首页', icon: 'dashboard|svg', affix: true }
+      }
+    ]
+  },
+  {
+    path: '/user',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'profile',
+        component: () => import('@/views/system/user/profile/index'),
+        name: 'Profile',
+        meta: { title: '个人中心', icon: 'user|svg' }
+      }
+    ]
+  },
+  {
+    path: '/user',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'profile',
+        component: () => import('@/views/system/user/profile/index'),
+        name: 'Profile',
+        meta: { title: '个人中心', icon: 'user|svg' }
+      }
+    ]
+  },
+
+  // form相关
+  formRouter,
+  // table相关
+  tableRouter,
+  // 功能相关
+  featRouter,
+  // 组件相关
+  componentsRouter,
+  // 图标相关
+  chartsRouter
+  // add new route ..
+]
+
+// 动态路由，基于用户权限动态去加载
+export const dynamicRoutes = [
+  {
+    path: '/system/user-auth',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:user:edit'],
+    children: [
+      {
+        path: 'role/:userId(\\d+)',
+        component: () => import('@/views/system/user/authRole'),
+        name: 'AuthRole',
+        meta: { title: '分配角色', activeMenu: '/system/user' }
+      }
+    ]
+  }
+]
 ```
 
-### 细粒度权限
+可以看到有`constantRoutes`和`dynamicRoutes`2个数组，`constantRoutes`是公共路由，那些不需要动态判断权限的路由，如登录页、404、等通用页面都可以在这个数组中去声明；`dynamicRoutes`代表那些需要根据用户动态判断权限并通过`addRoutes`动态添加的页面，可以手动在里面添加路由并分配角色或者菜单权限，也可以在系统管理-菜单管理进行新增和修改操作，前端加载会自动请求接口获取菜单信息并转换成前端对应的路由。
 
-**函数方式**
+总结来看：
 
-[usePermission](https://github.com/vbenjs/vue-vben-admin/tree/main/src/hooks/web/usePermission.ts) 还提供了按钮级别的权限控制。
+1. 创建vue实例的时候将vue-router挂载，但这个时候vue-router挂载一些登录或者不用权限的公用的页面。
+2. 当用户登录后，获取用role，将role和路由表每个页面的需要的权限作比较，生成最终用户可访问的路由表。
+3. 调用router.addRoutes(store.getters.addRouters)添加用户可访问的路由。
+4. 使用vuex管理路由表，根据vuex中可访问的路由渲染侧边栏组件
 
-```vue
-<template>
-  <a-button v-if="hasPermission(['20000', '2000010'])" color="error" class="mx-4">
-    拥有[20000,2000010]code可见
-  </a-button>
-</template>
-<script lang="ts">
-  import { usePermission } from '/@/hooks/web/usePermission';
-  import { RoleEnum } from '/@/enums/roleEnum';
+### `main.js`
 
-  export default defineComponent({
-    setup() {
-      const { hasPermission } = usePermission();
-      return { hasPermission };
-    },
-  });
-</script>
+在`main.js`中引入了一个`permission.js`文件：
+
+```js
+import router from './router'
+import store from './store'
+import { Message } from 'element-ui'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+import { getToken } from '@/utils/auth'
+import { isRelogin } from '@/utils/request'
+
+NProgress.configure({ showSpinner: false })
+
+const whiteList = ['/login', '/auth-redirect', '/bind', '/register']
+
+router.beforeEach((to, from, next) => {
+  NProgress.start()
+  if (getToken()) {
+    to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
+    /* has token*/
+    if (to.path === '/login') {
+      next({ path: '/' })
+      NProgress.done()
+    } else {
+      if (store.getters.roles.length === 0) {
+        isRelogin.show = true
+        // 判断当前用户是否已拉取完user_info信息
+        store.dispatch('GetInfo').then(() => {
+          isRelogin.show = false
+          store.dispatch('GenerateRoutes').then(accessRoutes => {
+            // 根据roles权限生成可访问的路由表
+            router.addRoutes(accessRoutes) // 动态添加可访问路由表
+            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
+          })
+        }).catch(err => {
+            store.dispatch('LogOut').then(() => {
+              Message.error(err)
+              next({ path: '/' })
+            })
+          })
+      } else {
+        next()
+      }
+    }
+  } else {
+    // 没有token
+    if (whiteList.indexOf(to.path) !== -1) {
+      // 在免登录白名单，直接进入
+      next()
+    } else {
+      next(`/login?redirect=${to.fullPath}`) // 否则全部重定向到登录页
+      NProgress.done()
+    }
+  }
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
 ```
 
-**组件方式**
+在`router.beforeEach`钩子中判断用户是否登录，登录之后获取到用户信息，以及用户的role,将role和路由表每个页面的需要的权限作比较，生成最终用户可访问的路由表。`store.dispatch('GenerateRoutes')`中会先向服务端请求路由数据，并路由遍历，验证是否具备权限。
 
-具体查看[权限组件使用](../components/auth.md)
+```js
+// 生成路由
+    GenerateRoutes({ commit }) {
+      return new Promise(resolve => {
+        // 向后端请求路由数据
+        getRouters().then(res => {
+          const sdata = JSON.parse(JSON.stringify(res.data))
+          const rdata = JSON.parse(JSON.stringify(res.data))
+          const sidebarRoutes = filterAsyncRouter(sdata)
+          const rewriteRoutes = filterAsyncRouter(rdata, false, true)
+          const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
+          rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
+          router.addRoutes(asyncRoutes);
+          commit('SET_ROUTES', rewriteRoutes)
+          commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
+          commit('SET_DEFAULT_ROUTES', sidebarRoutes)
+          commit('SET_TOPBAR_ROUTES', sidebarRoutes)
+          resolve(rewriteRoutes)
+        })
+      })
+    }
+  }
+```
 
-**指令方式**
+这里的代码说白了就是干了一件事，通过用户的权限和之前在router.js里面asyncRouterMap的每一个页面所需要的权限做匹配，最后返回一个该用户能够访问路由有哪些。
 
-::: tip
+## axios拦截器
 
-指令方式不能动态更改权限
+:::  warning
+
+前端有了鉴权后端还需要鉴权吗？
+
+前端的鉴权只是一个辅助功能，对于专业人员这些限制都是可以轻松绕过的，为保证服务器安全，无论前端是否进行了权限校验，后端接口都需要对会话请求再次进行权限校验！
 
 :::
 
-```html
-<a-button v-auth="'1000'" type="primary" class="mx-4"> 拥有code ['1000']权限可见 </a-button>
+上面所做的那些路由权限的校验，其实接口也需要做权限的拦截
+
+首先我们通过**request拦截器**在每个请求头里面塞入**token**，好让后端对请求进行权限验证。并创建一个respone拦截器，当服务端返回特殊的状态码，我们统一做处理，如没权限或者token失效等操作。
+
+## 指令权限
+
+**使用权限字符串 v-hasPermi**
+
+```vue
+// 单个
+<el-button v-hasPermi="['system:user:add']">存在权限字符串才能看到</el-button>
+// 多个
+<el-button v-hasPermi="['system:user:add', 'system:user:edit']">包含权限字符串才能看到</el-button>
 ```
 
-### 如何初始化 code
+**使用角色字符串 v-hasRole**
 
-通常，如需做按钮级别权限，后台会提供相应的 code，或者类型的判断标识。这些编码只需要在登录后获取一次即可。
+```vue
+// 单个
+<el-button v-hasRole="['admin']">管理员才能看到</el-button>
+// 多个
+<el-button v-hasRole="['role1', 'role2']">包含角色才能看到</el-button>
+```
 
-```ts
-import { getPermCodeByUserId } from '/@/api/sys/user';
-import { permissionStore } from '/@/store/modules/permission';
-async function changePermissionCode(userId: string) {
-  // 从后台获取当前用户拥有的编码
-  const codeList = await getPermCodeByUserId({ userId });
-  permissionStore.commitPermCodeListState(codeList);
+::: tip
+
+在某些情况下，它是不适合使用v-hasPermi，如元素标签组件，只能通过手动设置v-if。 可以使用全局权限判断函数，用法和指令 v-hasPermi 类似。
+
+:::
+
+```vue
+<template>
+  <el-tabs>
+    <el-tab-pane v-if="checkPermi(['system:user:add'])" label="用户管理" name="user">用户管理</el-tab-pane>
+    <el-tab-pane v-if="checkPermi(['system:user:add', 'system:user:edit'])" label="参数管理" name="menu">参数管理</el-tab-pane>
+    <el-tab-pane v-if="checkRole(['admin'])" label="角色管理" name="role">角色管理</el-tab-pane>
+    <el-tab-pane v-if="checkRole(['admin','common'])" label="定时任务" name="job">定时任务</el-tab-pane>
+   </el-tabs>
+</template>
+
+<script>
+import { checkPermi, checkRole } from "@/utils/permission"; // 权限判断函数
+
+export default{
+   methods: {
+    checkPermi,
+    checkRole
+  }
 }
+</script>
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
