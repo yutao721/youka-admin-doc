@@ -14,7 +14,7 @@
 
 ```bash
 # 拉取代码
-git clone https://github.com/vbenjs/vue-vben-admin-doc
+git clone https://github.com/yutao721/youka-admin-doc
 
 # 安装依赖
 yarn

@@ -6,11 +6,11 @@
 module.exports = {
   base: '/',
   title: '通用管理后台',
+  description: '通用管理后台模板,功能完善中...',
   lang: 'zh-CN',
-  // head: createHead(),
   themeConfig: {
-    repo: 'vbenjs/vue-vben-admin',
-    docsRepo: 'vbenjs/vue-vben-admin-doc',
+    repo: 'yutao721/youka-admin',
+    docsRepo: 'yutao721/youka-admin-doc',
     logo: '/logo.png',
     docsBranch: 'main',
     editLinks: true,
@@ -26,33 +26,6 @@ module.exports = {
   }
 };
 
-/**
- * @type {()=>import('vitepress').HeadConfig[]}
- */
-
-function createHead() {
-  return [
-    ['meta', { name: 'author', content: 'Vbenjs Team' }],
-    [
-      'meta',
-      {
-        name: 'keywords',
-        content: 'vben, vitejs, vite, ant-design-vue, vue'
-      }
-    ],
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
-    [
-      'meta',
-      {
-        name: 'viewport',
-        content:
-          'width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'
-      }
-    ],
-    ['meta', { name: 'keywords', content: 'vue vben admin docs' }],
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
-  ];
-}
 
 /**
  * @type {()=>import('./theme-default/config').DefaultTheme.NavItem[]}
@@ -214,10 +187,6 @@ function createSidebar() {
           {
             text: '常见问题',
             link: '/other/faq'
-          },
-          {
-            text: '常见疑点',
-            link: '/other/doubt'
           }
         ]
       }
