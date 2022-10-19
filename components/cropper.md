@@ -1,129 +1,114 @@
 # Cropper
 
-图片裁剪组件
+一个优雅的图片裁剪插件，[vue-cropper](https://github.com/xyxiao001/vue-cropper)
 
-## CropperImage
+### 安装
 
-图片裁剪组件
+```bash
+# npm 安装
+npm install vue-cropper
+# yarn 安装
+yarn add vue-cropper
+```
 
 ### Usage
 
 ```vue
 <template>
-  <CropperImage ref="refCropper" :src="img" @cropend="handleCropend" style="width: 40vw" />
+  <vueCropper
+    ref="cropper"
+    :img="option.img"
+    :outputSize="option.size"
+    :outputType="option.outputType"
+  ></vueCropper>
 </template>
-<script lang="ts">
-  import { defineComponent, ref } from 'vue';
-  import { CropperImage } from '/@/components/Cropper';
-  import img from '/@/assets/images/header.jpg';
+<script lang="js">
+  import { VueCropper }  from 'vue-cropper' 
 
-  export default defineComponent({
+  export default {
     components: {
-      CropperImage,
+      VueCropper,
     },
-    setup() {
-      const info = ref('');
-      const cropperImg = ref('');
-
-      function handleCropend({ imgBase64, imgInfo }) {
-        info.value = imgInfo;
-        cropperImg.value = imgBase64;
-      }
-
+    data() {
       return {
-        img,
-        info,
-        cropperImg,
-        handleCropend,
-      };
+        options: {
+          img: store.getters.avatar, //裁剪图片的地址
+          autoCrop: true, // 是否默认生成截图框
+          autoCropWidth: 200, // 默认生成截图框宽度
+          autoCropHeight: 200, // 默认生成截图框高度
+          fixedBox: true // 固定截图框大小 不允许改变
+        },
+      }
     },
-  });
+  };
 </script>
 ```
 
 ### Props
 
-| 属性            | 类型      | 默认值           | 说明             |
-| --------------- | --------- | ---------------- | ---------------- |
-| src             | `string`  | -                | 图片源           |
-| alt             | `string`  | -                | 图片 alt         |
-| circled         | `boolean` | `false`          | 圆形裁剪框       |
-| realTimePreview | `boolean` | `true`           | 实时触发预览     |
-| height          | `string`  | `360px`          | 高度             |
-| crossorigin     | `string`  | -                | crossorigin      |
-| imageStyle      | `object`  | ``               | 图片样式         |
-| options         | `object`  | `DefaultOptions` | corpperjs 配置项 |
+| 名称           | 功能                                                     | 默认值                 | 可选值                                    |
+| -------------- | -------------------------------------------------------- | ---------------------- | ----------------------------------------- |
+| img            | 裁剪图片的地址                                           | 空                     | `url 地址`, `base64`, `blob`              |
+| outputSize     | 裁剪生成图片的质量                                       | `1`                    | 0.1 ~ 1                                   |
+| outputType     | 裁剪生成图片的格式                                       | jpg (jpg 需要传入jpeg) | `jpeg`, `png`, `webp`                     |
+| info           | 裁剪框的大小信息                                         | `true`                 | `true`, `false`                           |
+| canScale       | 图片是否允许滚轮缩放                                     | `true`                 | `true`, `false`                           |
+| autoCrop       | 是否默认生成截图框                                       | `false`                | `true`, `false`                           |
+| autoCropWidth  | 默认生成截图框宽度                                       | 容器的 80%             | 0 ~ max                                   |
+| autoCropHeight | 默认生成截图框高度                                       | 容器的 80%             | 0 ~ max                                   |
+| fixed          | 是否开启截图框宽高固定比例                               | `false`                | `true`, `false`                           |
+| fixedNumber    | 截图框的宽高比例                                         | `[1, 1]`               | `[ 宽度 , 高度 ]`                         |
+| full           | 是否输出原图比例的截图                                   | `false`                | `true`, `false`                           |
+| fixedBox       | 固定截图框大小                                           | 不允许改变             | `false`                                   |
+| canMove        | 上传图片是否可以移动                                     | `true`                 | `true`, `false`                           |
+| canMoveBox     | 截图框能否拖动                                           | `true`                 | `true`, `false`                           |
+| original       | 上传图片按照原始比例渲染                                 | `false`                | `true`, `false`                           |
+| centerBox      | 截图框是否被限制在图片里面                               | `false`                | `true`, `false`                           |
+| high           | 是否按照设备的dpr 输出等比例图片                         | `true`                 | `true`, `false`                           |
+| infoTrue       | true 为展示真实输出图片宽高 `false` 展示看到的截图框宽高 | false                  | `true`, `false`                           |
+| maxImgSize     | 限制图片最大宽度和高度                                   | `2000`                 | 0 ~ max                                   |
+| enlarge        | 图片根据截图框输出比例倍数                               | `1`                    | 0 ~ max(建议不要太大不然会卡死的呢)       |
+| mode           | 图片默认渲染方式                                         | `contain`              | `contain` , `cover`, `100px`, `100%` auto |
 
-#### DefaultOptions
+### 可用回调方法
 
-```ts
-{
-  aspectRatio: 1,
-  zoomable: true,
-  zoomOnTouch: true,
-  zoomOnWheel: true,
-  cropBoxMovable: true,
-  cropBoxResizable: true,
-  toggleDragModeOnDblclick: true,
-  autoCrop: true,
-  background: true,
-  highlight: true,
-  center: true,
-  responsive: true,
-  restore: true,
-  checkCrossOrigin: true,
-  checkOrientation: true,
-  scalable: true,
-  modal: true,
-  guides: true,
-  movable: true,
-  rotatable: true,
-}
-```
+- `@realTime` 实时预览事件
+- `@imgMoving` 图片移动回调函数
+- `@cropMoving` 截图框移动回调函数
+- `@imgLoad` 图片加载的回调, 返回结果 `success`, `error`
 
-## CropperAvatar
+### 参考示例
 
-头像裁剪组件
+在菜单组件>copper中使用了vue-cropper，并将截图上传至oss,注意以下代码的地方
 
-### Usage
+```js
+// 上传图片
+uploadImg() {
+  // 获取截图的 blob 数据
+  this.$refs.cropper.getCropBlob(data => {
+    let formData = new FormData();
+    formData.append('avatarfile', data);
 
-```vue
-<template>
-  <CropperAvatar :uploadApi="uploadApi" />
-</template>
-<script lang="ts">
-  import { defineComponent, ref } from 'vue';
-  import { CropperAvatar } from '/@/components/Cropper';
-  import { uploadApi } from '/@/api/sys/upload';
+    // 由于服务端文件上传接口统一接收file对象，从而数据在提交前需要将blob数据转为file对象，转换方法如下
+    const file = new window.File([data], `${Date.now()}`, { type: data.type })
+    console.log(file);
 
-  export default defineComponent({
-    components: {
-      CropperAvatar,
-    },
+    // oss 上传
+    uploadFile(12, file).then(imgUrl => {
+      console.log(imgUrl);
+      this.open = false;
+      this.options.img = imgUrl;
+      this.$modal.msgSuccess('修改成功');
+      this.visible = false;
+    }).catch(err => {
+
+    })
   });
-</script>
+},
 ```
 
-### Props
 
-| 属性      | 类型                                              | 默认值  | 说明         | 版本 |
-| --------- | ------------------------------------------------- | ------- | ------------ | ---- |
-| width     | `string,number`                                   | `200px` | 图片源       |  |
-| uploadApi | `({ file: Blob, name: string }) => Promise<void>` | -       | 图片上传接口 |  |
-| value     | `String`                                          | -       | 当前头像地址(v-model) | 2.5.3 |
-| showBtn   | `Boolean`                                         | true    | 是否显示按钮 | 2.5.3 |
-| btnText   | `String`                                          | -       | 按钮文案    | 2.5.3 |
-| btnProps  | `ButtonProps`                                     | -       | 按钮的其它属性 | 2.5.3 |
 
-### Events
+### 更多文档说明
 
-| 名称      | 参数                                              |  说明         | 版本 |
-| --------- | ------------------------------------------------- | ------------ | ---- |
-| change    | `value: String`                                   | 当头像上传完成时触发   | 2.5.3 |
-
-### Methods
-
-| 名称      | 定义                                              |  说明         | 版本 |
-| --------- | ------------------------------------------------- | ------------ | ---- |
-| openModal    | `()=>void`                                 | 打开上传Modal   | 2.5.3 |
-| closeModal    | `()=>void`                                 | 关闭上传Modal   | 2.5.3 |
+[文档地址](https://github.com/xyxiao001/vue-cropper)

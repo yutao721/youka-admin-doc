@@ -1,28 +1,53 @@
 # 前言
 
-::: danger 注意事项
+组件分类
+- 全局组件
+- 局部组件
+- 第三方组件
 
-组件的 `defaultXXX` 属性不要使用，`ant-design-vue 2.2` 版本之后将会逐步移除。二次封装的组件也不兼容 `defaultXXX` 属性。
 
-:::
+## 全局组件
 
-## Usage
+该项目有以下全局组件，使用的时候可以直接使用，不用注册。
 
-该项目的组件大部分没有进行全局注册。采用了按需引入注册方式，如下
+```vue
+Vue.component('DictTag', DictTag)
+Vue.component('Pagination', Pagination)
+Vue.component('RightToolbar', RightToolbar)
+Vue.component('Editor', Editor)
+Vue.component('FileUpload', FileUpload)
+Vue.component('ImageUpload', ImageUpload)
+Vue.component('ImagePreview', ImagePreview)
+Vue.component('CIcon', CIcon)
+Vue.component('el-form-model', ElFormModel)
+Vue.component('svg-icon', SvgIcon)
+```
+
+## 局部组件
+
+组件大部分没有进行全局注册。采用了引入注册方式，如下
 
 ```vue
 <template>
-  <ConfigProvider>
-    <router-view />
-  </ConfigProvider>
+  <div class="login-code">
+    <ReImageVerify ref="ReImageVerify" :code.sync="imgCode"/>
+  </div>
 </template>
-
-<script lang="ts">
-  import { defineComponent } from 'vue';
-  import { ConfigProvider } from 'ant-design-vue';
-  export default defineComponent({
-    name: 'App',
-    components: { ConfigProvider },
-  });
+<script>
+  import ReImageVerify from '@/components/ReImageVerify';
+  export default {
+    components: { ReImageVerify },
+    data() {
+      return {
+        imgCode: 1234
+      }
+    },
+  };
 </script>
 ```
+
+## 第三方组件
+
+第三方组件就是以`npm install` 安装的组件，按照第三方组件使用说明文档使用。
+
+

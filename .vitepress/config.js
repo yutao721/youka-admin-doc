@@ -85,17 +85,10 @@ function createNav() {
           text: '介绍',
           link: '/components/introduction'
         },
-        {
-          text: '全局组件',
-          link: '/components/glob/button'
-        },
+
         {
           text: '常用组件',
           link: '/components/basic'
-        },
-        {
-          text: '函数式组件',
-          link: '/components/functional/context-menu'
         }
       ]
     }
@@ -115,73 +108,15 @@ function createSidebar() {
         ]
       },
       {
-        text: '全局组件',
-        children: [
-          {
-            text: 'Button',
-            link: '/components/glob/button'
-          }
-        ]
-      },
-      {
         text: '常用组件',
         children: [
           {
-            text: 'Basic',
-            link: '/components/basic'
-          },
-          {
-            text: 'Page',
+            text: 'Pagination ',
             link: '/components/page'
-          },
-          {
-            text: 'Icon',
-            link: '/components/icon'
-          },
-          {
-            text: 'Authority',
-            link: '/components/auth'
           },
           {
             text: 'Form',
             link: '/components/form'
-          },
-          {
-            text: 'Table',
-            link: '/components/table'
-          },
-          {
-            text: 'PopConfirmButton',
-            link: '/components/pop-confirm-button'
-          },
-          {
-            text: 'CollapseContainer',
-            link: '/components/collapse-container'
-          },
-          {
-            text: 'ScrollContainer',
-            link: '/components/scroll-container'
-          },
-          {
-            text: 'LazyContainer',
-            link: '/components/lazy-container'
-          },
-          {
-            text: 'CodeEditor',
-            link: '/components/code-editor'
-          },
-          {
-            text: 'JsonPreview',
-            link: '/components/json-preview'
-          },
-          {
-            text: 'CountDown',
-            link: '/components/count-down'
-          },
-
-          {
-            text: 'ClickOutSide',
-            link: '/components/click-out-side'
           },
           {
             text: 'CountTo',
@@ -192,22 +127,6 @@ function createSidebar() {
             link: '/components/cropper'
           },
           {
-            text: 'Description',
-            link: '/components/desc'
-          },
-          {
-            text: 'Drawer',
-            link: '/components/drawer'
-          },
-          {
-            text: 'Modal',
-            link: '/components/modal'
-          },
-          {
-            text: 'FlowChart',
-            link: '/components/flow-chart'
-          },
-          {
             text: 'FileUpload',
             link: '/components/upload'
           },
@@ -216,65 +135,16 @@ function createSidebar() {
             link: '/components/uploadImage'
           },
           {
-            text: 'Tree',
+            text: 'editor',
+            link: '/components/editor'
+          },
+          {
+            text: 'TreeSelect',
             link: '/components/tree'
           },
           {
-            text: 'Excel',
-            link: '/components/excel'
-          },
-          {
-            text: 'Qrcode',
-            link: '/components/qrcode'
-          },
-          {
-            text: 'Markdown',
-            link: '/components/markdown'
-          },
-          {
-            text: 'Loading',
-            link: '/components/loading'
-          },
-          {
-            text: 'Tinymce',
-            link: '/components/tinymce'
-          },
-          {
-            text: 'Time',
-            link: '/components/time'
-          },
-          {
-            text: 'StrengthMeter',
-            link: '/components/strength-meter'
-          },
-          {
-            text: 'Verify',
+            text: 'ReImageVerify',
             link: '/components/verify'
-          },
-          {
-            text: 'Transition',
-            link: '/components/transition'
-          },
-          {
-            text: 'VirtualScroll',
-            link: '/components/virtual-scroll'
-          }
-        ]
-      },
-      {
-        text: '函数式组件',
-        children: [
-          {
-            text: 'ContextMenu',
-            link: '/components/functional/context-menu'
-          },
-          {
-            text: 'Loading',
-            link: '/components/functional/loading'
-          },
-          {
-            text: 'Preview',
-            link: '/components/functional/preview'
           }
         ]
       }

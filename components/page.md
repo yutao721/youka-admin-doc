@@ -1,88 +1,57 @@
-# Page
+# Pagination 分页 
 
-页面相关组件
+Pagination 组件主要是基于 Element 的 `el-pagination`进行了二次封装，并拓展了自动滚动的功能。
 
-## PageWrapper
+## 使用方式
 
-用于包裹页面组件
-
-### Usage
-
-```vue
+```html
 <template>
-  <div>
-    <PageWrapper>
-      <template #left>left</template>
-      <template #right>right</template>
-    </PageWrapper>
-  </div>
+  <pagination
+    :total="total"
+    :page.sync="listQuery.page"
+    :limit.sync="listQuery.limit"
+    @pagination="getList" />
 </template>
+
 <script>
-  import { PageWrapper } from '/@/components/Page';
-  import { defineComponent } from 'vue';
-  export default defineComponent({
-    components: { PageWrapper },
-    setup() {
-      return {};
-    },
-  });
+import Pagination from '@/components/Pagination'
+
+export default {
+  components: { Pagination },
+  data() {
+    return {
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 20
+      }
+    }
+  },
+  methods: {
+    getList() {
+      // 获取数据
+    }
+  }
+}
 </script>
 ```
 
-### Props
+## Attributes
 
-| 属性              | 类型               | 默认值 | 说明                            |
-| ----------------- | ------------------ | ------ | ------------------------------- |
-| title             | `string`           | -      | pageHeader title                |
-| dense             | `是否缩小主体区域` | false  | 为 true 将会取消 padding/margin |
-| content           | `string`           | -      | pageHeader Content 内容         |
-| contentStyle      | `object`           | -      | 主体区域样式                    |
-| contentClass      | `string`           | -      | 主体区域 class                  |
-| contentBackground | `boolean`          | -      | 主体区域背景                    |
-| contentFullHeight | `boolean`          | false  | 主体区域是否占满整个屏幕高度    |
-| fixedHeight       | `boolean`          | false  | 固定主体区域高度                |
+|    参数     | 说明                                |   类型    |     默认值      |
+| :---------: | :---------------------------------- | :-------: | :-------------: |
+|    total    | 总条目数                            |  Number   |        /        |
+|    page     | 当前页数  支持 .sync 修饰符         |  Number   |        1        |
+|    limit    | 每页显示条目个数，支持 .sync 修饰符 |  Number   |       20        |
+| page-sizes  | 每页显示个数选择器的选项设置        | Number [] | 10, 20, 30, 50] |
+|   hidden    | 是否隐藏                            |  Boolean  |      false      |
+| auto-scroll | 分页之后是否自动滚动到顶部          |  Boolean  |      true       |
 
-### Slots
+其它 Element 的 `el-pagination`支持的属性，它也都支持。详情见[文档](http://element.eleme.io/#/zh-CN/component/pagination)
 
-**pageHeader 的 slot 都支持**
+## Events
 
-| 名称          | 说明                |
-| ------------- | ------------------- |
-| leftFooter    | PageFooter 左侧区域 |
-| rightFooter   | PageFooter 右侧区域 |
-| headerContent | pageHeader 主体内容 |
-| default       | 主体区域            |
+| 事件名称   | 说明                                | 回调参数     |
+| ---------- | ----------------------------------- | ------------ |
+| pagination | 当 limit 或者 page 发生改变时会触发 | {page,limit} |
 
-## PageFooter
-
-用于页面底部工具栏
-
-### 使用
-
-```vue
-<template>
-  <div>
-    <PageFooter>
-      <template #left>left</template>
-      <template #right>right</template>
-    </PageFooter>
-  </div>
-</template>
-<script>
-  import { PageFooter } from '/@/components/Page';
-  import { defineComponent } from 'vue';
-  export default defineComponent({
-    components: { PageFooter },
-    setup() {
-      return {};
-    },
-  });
-</script>
-```
-
-### Slots
-
-| 名称  | 说明     |
-| ----- | -------- |
-| left  | 左侧区域 |
-| right | 右侧区域 |
