@@ -1,0 +1,27 @@
+import{_ as n,f as a,e as s,N as t}from"./plugin-vue_export-helper.87254cb5.js";const m='{"title":"\u524D\u8A00","description":"","frontmatter":{},"headers":[{"level":2,"title":"\u5168\u5C40\u7EC4\u4EF6","slug":"\u5168\u5C40\u7EC4\u4EF6"},{"level":2,"title":"\u5C40\u90E8\u7EC4\u4EF6","slug":"\u5C40\u90E8\u7EC4\u4EF6"},{"level":2,"title":"\u7B2C\u4E09\u65B9\u7EC4\u4EF6","slug":"\u7B2C\u4E09\u65B9\u7EC4\u4EF6"}],"relativePath":"components/introduction.md","lastUpdated":1666167121502}',p={},e=t(`<h1 id="\u524D\u8A00"><a class="header-anchor" href="#\u524D\u8A00" aria-hidden="true">#</a> \u524D\u8A00</h1><p>\u7EC4\u4EF6\u5206\u7C7B</p><ul><li>\u5168\u5C40\u7EC4\u4EF6</li><li>\u5C40\u90E8\u7EC4\u4EF6</li><li>\u7B2C\u4E09\u65B9\u7EC4\u4EF6</li></ul><h2 id="\u5168\u5C40\u7EC4\u4EF6"><a class="header-anchor" href="#\u5168\u5C40\u7EC4\u4EF6" aria-hidden="true">#</a> \u5168\u5C40\u7EC4\u4EF6</h2><p>\u8BE5\u9879\u76EE\u6709\u4EE5\u4E0B\u5168\u5C40\u7EC4\u4EF6\uFF0C\u4F7F\u7528\u7684\u65F6\u5019\u53EF\u4EE5\u76F4\u63A5\u4F7F\u7528\uFF0C\u4E0D\u7528\u6CE8\u518C\u3002</p><div class="language-vue"><pre><code>Vue.component(&#39;DictTag&#39;, DictTag)
+Vue.component(&#39;Pagination&#39;, Pagination)
+Vue.component(&#39;RightToolbar&#39;, RightToolbar)
+Vue.component(&#39;Editor&#39;, Editor)
+Vue.component(&#39;FileUpload&#39;, FileUpload)
+Vue.component(&#39;ImageUpload&#39;, ImageUpload)
+Vue.component(&#39;ImagePreview&#39;, ImagePreview)
+Vue.component(&#39;CIcon&#39;, CIcon)
+Vue.component(&#39;el-form-model&#39;, ElFormModel)
+Vue.component(&#39;svg-icon&#39;, SvgIcon)
+</code></pre></div><h2 id="\u5C40\u90E8\u7EC4\u4EF6"><a class="header-anchor" href="#\u5C40\u90E8\u7EC4\u4EF6" aria-hidden="true">#</a> \u5C40\u90E8\u7EC4\u4EF6</h2><p>\u7EC4\u4EF6\u5927\u90E8\u5206\u6CA1\u6709\u8FDB\u884C\u5168\u5C40\u6CE8\u518C\u3002\u91C7\u7528\u4E86\u5F15\u5165\u6CE8\u518C\u65B9\u5F0F\uFF0C\u5982\u4E0B</p><div class="language-vue"><pre><code><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>template</span><span class="token punctuation">&gt;</span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">&quot;</span>login-code<span class="token punctuation">&quot;</span></span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ReImageVerify</span> <span class="token attr-name">ref</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">&quot;</span>ReImageVerify<span class="token punctuation">&quot;</span></span> <span class="token attr-name">:code.sync</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">&quot;</span>imgCode<span class="token punctuation">&quot;</span></span><span class="token punctuation">/&gt;</span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>template</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">&gt;</span></span><span class="token script"><span class="token language-javascript">
+  <span class="token keyword">import</span> ReImageVerify <span class="token keyword">from</span> <span class="token string">&#39;@/components/ReImageVerify&#39;</span><span class="token punctuation">;</span>
+  <span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">{</span>
+    <span class="token literal-property property">components</span><span class="token operator">:</span> <span class="token punctuation">{</span> ReImageVerify <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token keyword">return</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">imgCode</span><span class="token operator">:</span> <span class="token number">1234</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">&gt;</span></span>
+</code></pre></div><h2 id="\u7B2C\u4E09\u65B9\u7EC4\u4EF6"><a class="header-anchor" href="#\u7B2C\u4E09\u65B9\u7EC4\u4EF6" aria-hidden="true">#</a> \u7B2C\u4E09\u65B9\u7EC4\u4EF6</h2><p>\u7B2C\u4E09\u65B9\u7EC4\u4EF6\u5C31\u662F\u4EE5<code>npm install</code> \u5B89\u88C5\u7684\u7EC4\u4EF6\uFF0C\u6309\u7167\u7B2C\u4E09\u65B9\u7EC4\u4EF6\u4F7F\u7528\u8BF4\u660E\u6587\u6863\u4F7F\u7528\u3002</p>`,11),o=[e];function c(l,u,i,r,k,d){return s(),a("div",null,o)}var h=n(p,[["render",c]]);export{m as __pageData,h as default};
