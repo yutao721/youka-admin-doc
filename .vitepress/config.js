@@ -4,7 +4,7 @@
  * https://vitejs.cn/vitepress/config/basics.html
  */
 module.exports = {
-  base: '/',
+  base: '/youka-admin-doc/',
   title: '通用管理后台',
   description: '通用管理后台模板,功能完善中...',
   lang: 'zh-CN',
