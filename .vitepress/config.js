@@ -61,7 +61,7 @@ function createNav() {
 
         {
           text: '常用组件',
-          link: '/components/basic'
+          link: '/components/page'
         }
       ]
     }
