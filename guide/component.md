@@ -21,7 +21,7 @@ export default {
 
 对应页面如下图：
 
-![](https://gitee.com/yutao618/images/raw/master/images/20221017172348.png)
+![](/images/login.png)
 
 如果项目不需要注册，isShowRegister置为false即可隐藏注册入口；如果项目不需要找回密码功能，则isShowForget置为false即可。
 
