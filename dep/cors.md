@@ -41,4 +41,3 @@
 
 **后台开启 cors 不需要前端做任何改动**
 
-nginx 配置文件可以查看[nginx 配置](../guide/deploy.md#使用-nginx-处理跨域)
