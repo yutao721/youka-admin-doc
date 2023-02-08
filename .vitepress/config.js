@@ -187,6 +187,10 @@ function createSidebar() {
           {
             text: '常见问题',
             link: '/other/faq'
+          },
+          {
+            text: '后台管理使用说明',
+            link: '/other/first'
           }
         ]
       }
