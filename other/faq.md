@@ -24,4 +24,7 @@ registry = https://registry.npm.taobao.org
 
 然后重新执行`yarn run reinstall`等待安装完成即可
 
+## 项目如何新增一个页面
+详细查看[如何新增一个页面](/other/first.html#如何新增一个页面)
+
 ## 更新中...

@@ -107,7 +107,8 @@ export default {
 
 
 
-详细流程可以查看[processon登录部分](https://www.processon.com/v/63e2348f56e18032d4ad68ad)
+详细流程可以查看 [processon登录部分](https://www.processon.com/v/63e2348f56e18032d4ad68ad) 或者下图所示
+![](/images/登录&页面展示.jpg)
 
 ## 权限管理使用流程
 
@@ -245,47 +246,70 @@ meta: {
 
 侧边栏、面包屑、侧边栏外链、侧边栏图标等问题查看 [指南路由菜单部分](/guide/router.html#侧边栏)
 
-## 新增页面
-
-如果熟悉 `vue-router` 的配置就很简单了。
-
-首先在 `@/router/index.js` 中增加需要添加的路由。
+## 如何新增一个页面
 
 **如：新增一个 excel 页面**
 
+### 新增 view  
+
+第一步，在 `src/views` 文件下根据项目需求创建对应的文件夹（文件夹可以多级）和文件，一般一个路由对应一个文件，该模块下的功能组件或者方法就建议在本文件夹下创建一个`utils`或`components`文件夹，各个功能模块维护自己的`utils`或`components`组件。如：
+
+![](/images/new_page_2.png)
+
+**注意：**
+
+- `template`中的根元素只能有一个div，加上类名`app-container`可以让业务代码页面保持一致的间距。
+
+- `script`标签中就是js业务逻辑代码，data,methods等在这里面书写。
+
+- `style`标签中是样式部分，最好加上`scoped`属性，避免样式污染，若使用csss编写样式，则需要加上`lang="scss"`属性
+
+- `style`中也可以使用`@import` 的方式引入其他样式文件，如下图所示：
+
+  ![](/images/new_page_3.png)
+
+### 配置路由
+
+页面创建之后，则需要配置路由才可以访问页面，如果熟悉 `vue-router` 的配置就很简单了。
+
+在 `src/router/index.js` 中`constantRoutes`数组中增加需要添加的路由。
+
+
+
 ```js
 {
-  path: '/excel',
-  component: Layout,
-  redirect: '/excel/export-excel',
-  name: 'excel',
-  meta: {
-    title: 'excel',
-    icon: 'excel'
-  }
-}
+    path: '/excel',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'Excel',
+    meta: { title: '表格', icon: 'excel|svg', breadcrumb: 'false' },
+  },
 ```
 
 ::: tip
-仅仅这样不会有任何效果的，它只是创建了一个基于`layout`的一级路由，你还需要在它下面的 `children` 中添加子路由。
+仅仅这样不会有任何效果的，它只是创建了一个基于`layout`的一级路由，如下图所示，点击之后会出现404的页面，是因为没有相对应的页面。
+
+如果需要展示页面，则需要在它下面的 `children` 中添加子路由。
+
 :::
+
+![](/images/new_page_1.png)
+
+**添加子路由：**
 
 ```js
 {
   path: '/excel',
   component: Layout,
-  redirect: '/excel/export-excel',
-  name: 'excel',
-  meta: {
-    title: 'excel',
-    icon: 'excel'
-  },
+  redirect: 'noRedirect',
+  name: 'Excel',
+  meta: { title: '表格', icon: 'excel|svg', breadcrumb: 'false' },
   children: [
     {
       path: 'export-excel',
-      component: ()=>import('excel/exportExcel'),
+      component: () => import('@/views/demo/excel/index'),
       name: 'exportExcel',
-      meta: { title: 'exportExcel' }
+      meta: { title: '导出表格' }
     }
   ]
 }
@@ -295,6 +319,33 @@ meta: {
 由于 `children` 下面只声明了一个路由所以不会有展开箭头，如果`children`下面的路由个数大于 1 就会有展开箭头，如下面所示。
 如果你想忽视这个自动判断可以使用 `alwaysShow: true`，这样它就会忽略之前定义的规则，一直显示根路由。
 :::
+
+![alwaysShow为false](/images/new_page_4.png)
+
+上图是`alwaysShow: false`或者路由没有该选项的时候，因为 `children` 下面只声明了一个路由所以不会有展开箭头。
+
+```diff
+{
+  path: '/excel',
+  component: Layout,
+  redirect: 'noRedirect',
+  name: 'Excel',
+  meta: { title: '表格', icon: 'excel|svg', breadcrumb: 'false' },
++  alwaysShow: true,
+  children: [
+    {
+      path: 'export-excel',
+      component: () => import('@/views/demo/excel/index'),
+      name: 'exportExcel',
+      meta: { title: '导出表格' }
+    }
+  ]
+}
+```
+
+使用 `alwaysShow: true`,则即使`children` 下面只声明了一个路由，也会有展开收起的效果。
+
+![](images/new_page_5.png)
 
 ### 多级目录(嵌套路由)
 
@@ -312,25 +363,104 @@ meta: {
 
 原则上有多少级路由嵌套就需要多少个`<router-view>`。
 
-
-
-### 新增 view
-
-新增完路由之后不要忘记在 `@/views` 文件下 创建对应的文件夹，一般一个路由对应一个文件，该模块下的功能组件或者方法就建议在本文件夹下创建一个`utils`或`components`文件夹，各个功能模块维护自己的`utils`或`components`组件。如：
-
 ### 新增 api
 
-最后在 `@/api` 文件夹下创建本模块对应的 api 服务。
+业务逻辑如果有api调用的场景，则需要在 `src/api` 文件夹下创建本模块对应的 api 服务。如果需要mock服务，则在`mock`文件夹下创建本模块对应的 mock 服务
+
+![](/images/new_page_6.png)
+
+根据服务端端接口文档，定义编写接口请求方法，接下来就可以在页面中使用刚定义的请求接口，下面就以获取文章列表接口作为演示：
+
+**第一种方式：把文件模块中所有的请求接口一次性全部导入**
+
+![](/images/new_page_7.png)
+
+**第二种方式：部分导入接口情况**
+
+![](/images/new_page_8.png)
+
+2种方式都可以引入创建的请求方法，根据自身需求选择。
+
+
 
 ### 新增组件
 
 个人写 vue 项目的习惯，在全局的 `@/components` 只会写一些全局的组件，如富文本，各种搜索组件，封装的日期组件等等能被公用的组件。每个页面或者模块特定的业务组件则会写在当前 views 下面。如：`@/views/article/components/xxx.vue`。这样拆分大大减轻了维护成本。
 
-### 新增样式
+### 新添加的页面如何增加权限
 
-页面的样式和组件是一个道理，全局的 `@/style` 放置一下全局公用的样式，每一个页面的样式就写在当前 `views`下面，请记住加上`scoped` 或者命名空间，避免造成全局的样式污染。
+以上是创建了一个没有任何权限的路由页面，就是说任何人都能访问该页面，一般公共路由页面，或者是不需要使用权限的路由页面，到此处就已经可以使用展示了，如果是新增的页面需要权限控制，动态加载，则需要如下调整。
 
-### windicss
+**1. 需要在侧边栏展示的目录或者页面**
+
+第一步，则需要在菜单管理中增加目录
+
+![](/images/new_page_9.png)
+
+菜单名称：侧边栏目录展示的名称
+
+路由地址：对应的是路由表中的path，不需要/
+
+第二步，需要在菜单管理中增加页面
+
+![](/images/new_page_10.png)
+
+第三步，新增或者编辑当前角色对应的菜单权限
+
+![](/images/new_page_11.png)
+
+这个时候再看`getRouters`接口返回值，就会多了刚才新添加的目录和菜单,侧边栏也正常显示刚添加的页面了
+
+![](/images/new_page_12.png)
+
+**如果还需要新目录和页面，则重复上面的操作即可；如果只是需要在某个已有目录下面添加页面，重复上面2、3步骤即可。**
+
+**2.不需要在侧边栏展示的目录或者页面**
+
+如果某些目录或者页面不需要在侧边栏展示，有2种方式去添加：
+
+第一种：也是在菜单管理中去添加页面，只不过`显示状态`选择隐藏，然后给角色挂载菜单。
+
+第二种：可以直接在`src/router/index.js`文件中的`dynamicRoutes`去添加路由菜单，这个里面的路由也会去校验权限，但是不会在侧边栏中展示。什么场景会使用这种方式去配置路由呢，比如：分配角色，这种不需要在侧边栏展示的路由页面；或者一些新增编辑二级页面都可以在这里配置，具体配置参考路由详细配置信息。
+
+示例：
+
+```js
+{
+    path: '/system/user-auth',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:user:edit'],
+    children: [
+      {
+        path: 'role/:userId(\\d+)',
+        component: () => import('@/views/system/user/authRole'),
+        name: 'AuthRole',
+        meta: { title: '分配角色', activeMenu: '/system/user' }
+      }
+    ]
+  }
+```
+
+### 新添加的按钮或者入口增加权限
+
+如下图所示，如何给`动态路由`上的按钮增加权限呢？
+
+![](/images/new_page_13.png)
+
+第一步，菜单管理中找到对应的页面，增加按钮，填写按钮权限标识符，如下图所示：
+
+![](/images/new_page_14.png)
+
+第二步，编辑当前角色对应的菜单权限，如下图所示：
+
+![](/images/new_page_15.png)
+
+第三步，在按钮上使用`v-hasPermi`指令对按钮加上相对应的权限
+
+![](/images/new_page_16.png)
+
+到此，页面和按钮都可以根据角色配置有相应的权限了。
 
 ## [Mock&联调](/guide/mock.html)
 
